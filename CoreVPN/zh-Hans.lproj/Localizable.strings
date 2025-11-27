@@ -1,0 +1,40 @@
+/* 简体中文本地化 */
+
+"tab_home" = "主页";
+"tab_nodes" = "节点";
+"tab_settings" = "设置";
+
+"home_current_node_title" = "当前节点";
+"home_button_connect" = "点击连接";
+"home_button_connecting" = "连接中…";
+"home_button_connected" = "已连接";
+
+"home_status_connected_desc" = "你的网络已通过加密通道传输";
+"home_status_disconnected_desc" = "未连接 · 你的真实 IP 暴露中";
+
+"home_stat_latency" = "延迟";
+"home_stat_download" = "下载";
+"home_stat_today_usage" = "今日流量";
+
+"home_footer_tip" = "使用蜂窝数据时可能产生额外流量费用";
+
+"nodes_title" = "选择节点";
+
+"settings_section_general" = "通用设置";
+"settings_section_about" = "关于";
+"settings_auto_connect_on_launch" = "开机自动连接";
+"settings_auto_connect_on_wifi" = "Wi‑Fi 下自动连接";
+"settings_version" = "版本号";
+
+"disconnect_confirm_title" = "断开连接";
+"disconnect_confirm_message" = "确定要断开VPN连接吗？";
+"disconnect_confirm_cancel" = "取消";
+"disconnect_confirm_confirm" = "断开";
+
+"settings_language" = "语言";
+"settings_language_subtitle" = "应用界面语言";
+"settings_remember_last_node" = "记住上次节点";
+
+"settings_section_legal" = "法律";
+"settings_privacy_policy" = "隐私政策";
+"settings_terms_of_service" = "服务条款";

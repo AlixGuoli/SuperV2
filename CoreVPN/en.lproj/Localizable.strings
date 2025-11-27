@@ -1,0 +1,40 @@
+/* English localization */
+
+"tab_home" = "Home";
+"tab_nodes" = "Nodes";
+"tab_settings" = "Settings";
+
+"home_current_node_title" = "Current Node";
+"home_button_connect" = "Tap to Connect";
+"home_button_connecting" = "Connecting…";
+"home_button_connected" = "Connected";
+
+"home_status_connected_desc" = "Your traffic is now encrypted via secure tunnel.";
+"home_status_disconnected_desc" = "Not connected · Your real IP is exposed.";
+
+"home_stat_latency" = "Latency";
+"home_stat_download" = "Download";
+"home_stat_today_usage" = "Today";
+
+"home_footer_tip" = "Using cellular data may incur additional charges.";
+
+"nodes_title" = "Choose a Node";
+
+"settings_section_general" = "General";
+"settings_section_about" = "About";
+"settings_auto_connect_on_launch" = "Connect on Launch";
+"settings_auto_connect_on_wifi" = "Auto Connect on Wi‑Fi";
+"settings_version" = "Version";
+
+"disconnect_confirm_title" = "Disconnect";
+"disconnect_confirm_message" = "Are you sure you want to disconnect the VPN?";
+"disconnect_confirm_cancel" = "Cancel";
+"disconnect_confirm_confirm" = "Disconnect";
+
+"settings_language" = "Language";
+"settings_language_subtitle" = "App interface language";
+"settings_remember_last_node" = "Remember last node";
+
+"settings_section_legal" = "Legal";
+"settings_privacy_policy" = "Privacy Policy";
+"settings_terms_of_service" = "Terms of Service";
