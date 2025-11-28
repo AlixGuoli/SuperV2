@@ -1,5 +1,5 @@
 //
-//  VPNConnectionViewModel.swift
+//  TunnelStateManager.swift
 //  CoreVPN
 //
 //  Created by SHI QIU on 2025/11/27.
@@ -9,28 +9,28 @@ import Foundation
 import NetworkExtension
 import Combine
 
-class VPNConnectionViewModel: ObservableObject {
+class TunnelStateManager: ObservableObject {
     
-    private let manager = VPNManager.shared()
+    private let tunnelService = TunnelService.shared()
     
-    @Published var connectionStatus: VPNConnectionStatus = .disconnected
+    @Published var connectionStatus: TunnelState = .disconnected
     @Published var showDisconnectConfirm: Bool = false
     @Published var connectedSince: Date?        // 开始连接时间
     @Published var elapsedDisplay: String = ""  // 展示用的连接时长文本
     @Published var fakeLatencyText: String = "-- ms"      // 底部卡片：延迟
     @Published var fakeDownloadText: String = "0 Mbps"    // 底部卡片：下载速度
     
-    private var systemStatus: NEVPNStatus = .invalid {
+    private var systemTunnelStatus: NEVPNStatus = .invalid {
         didSet {
-            guard oldValue != systemStatus else { return }
+            guard oldValue != systemTunnelStatus else { return }
             // 状态改变时，走统一映射
-            applyStateToUI(systemStatus)
+            updateViewFromSystemState(systemTunnelStatus)
         }
     }
     
-    private var connectBySelf: Bool = false  // 标记是否用户主动连接
+    private var userTriggered: Bool = false  // 标记是否用户主动连接
     private var timer: Timer?
-    private let connectedSinceKey = "VPNConnectedSince"
+    private let connectionTimestampKey = "ConnectionTimestamp"
     
     // 伪统计数据内部数值
     private var currentLatency: Double = 0
@@ -40,47 +40,47 @@ class VPNConnectionViewModel: ObservableObject {
     
     init() {
         // 初始化时读取当前系统状态
-        systemStatus = manager.coreMgr.connection.status
+        systemTunnelStatus = tunnelService.tunnelProvider.connection.status
         
         // 监听系统状态变化
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(vpnStatusDidChange(_:)),
+            selector: #selector(onTunnelStatusChanged(_:)),
             name: .NEVPNStatusDidChange,
             object: nil
         )
         
         // 恢复状态（加载配置并同步UI）
-        restoreConnectionState()
+        recoverTunnelState()
     }
     
     /// 恢复连接状态（app启动时调用）- 只读取已有配置，不创建
-    private func restoreConnectionState() {
-        connectBySelf = false  // 恢复状态，不是主动连接
+    private func recoverTunnelState() {
+        userTriggered = false  // 恢复状态，不是主动连接
         
         // 只读取已有配置，不创建（避免首次安装时触发权限）
-        manager.loadExistingPreferences { [weak self] hasConfig, error in
+        tunnelService.loadExistingPreferences { [weak self] hasConfig, error in
             guard let self = self else { return }
             
             if let error = error {
-                debugPrint("VPNConnectionViewModel: 恢复状态时加载配置失败 - \(error)")
+                debugPrint("TunnelStateManager: 恢复状态时加载配置失败 - \(error)")
                 self.connectionStatus = .disconnected
                 return
             }
             
             if !hasConfig {
                 // 没有配置，说明用户还没连接过，直接显示未连接状态
-                debugPrint("VPNConnectionViewModel: 没有配置，显示未连接状态")
+                debugPrint("TunnelStateManager: 没有配置，显示未连接状态")
                 self.connectionStatus = .disconnected
                 return
             }
             
             // 有配置，读取系统状态并同步UI
-            let current = self.manager.coreMgr.connection.status
+            let current = self.tunnelService.tunnelProvider.connection.status
             DispatchQueue.main.async {
                 // 如果系统已连接，尝试恢复 connectedSince
                 if current == .connected {
-                    let ts = UserDefaults.standard.double(forKey: self.connectedSinceKey)
+                    let ts = UserDefaults.standard.double(forKey: self.connectionTimestampKey)
                     if ts > 0 {
                         self.connectedSince = Date(timeIntervalSince1970: ts)
                     } else {
@@ -88,17 +88,17 @@ class VPNConnectionViewModel: ObservableObject {
                         self.connectedSince = now
                         UserDefaults.standard.set(
                             now.timeIntervalSince1970,
-                            forKey: self.connectedSinceKey
+                            forKey: self.connectionTimestampKey
                         )
                     }
                     self.startTimerIfNeeded()
                 }
                 
-                if self.systemStatus != current {
-                    self.systemStatus = current
+                if self.systemTunnelStatus != current {
+                    self.systemTunnelStatus = current
                 } else {
-                    // 状态没变化，主动调用 applyStateToUI 来驱动UI更新
-                    self.applyStateToUI(current)
+                    // 状态没变化，主动调用 updateViewFromSystemState 来驱动UI更新
+                    self.updateViewFromSystemState(current)
                 }
             }
         }
@@ -109,21 +109,21 @@ class VPNConnectionViewModel: ObservableObject {
         NotificationCenter.default.removeObserver(self)
     }
     
-    @objc private func vpnStatusDidChange(_ notification: Notification) {
-        let newStatus = manager.coreMgr.connection.status
-        debugPrint("VPNConnectionViewModel: 系统状态变化 - \(newStatus.rawValue)")
-        systemStatus = newStatus
+    @objc private func onTunnelStatusChanged(_ notification: Notification) {
+        let newStatus = tunnelService.tunnelProvider.connection.status
+        debugPrint("TunnelStateManager: 系统状态变化 - \(newStatus.rawValue)")
+        systemTunnelStatus = newStatus
     }
     
     /// 将系统 NEVPNStatus 同步到 UI（不依赖 didSet，供首次进入/无变更时调用）
-    private func applyStateToUI(_ newState: NEVPNStatus) {
+    private func updateViewFromSystemState(_ newState: NEVPNStatus) {
         switch newState {
         case .connected:
-            debugPrint("VPNConnectionViewModel: 系统已连接")
-            if connectBySelf {
+            debugPrint("TunnelStateManager: 系统已连接")
+            if userTriggered {
                 // 仅用户主动流程触发验证操作
-                // 计时起点放在验证成功后（performPostConnectionTasks）
-                performPostConnectionTasks()
+                // 计时起点放在验证成功后（runConnectionCheck）
+                runConnectionCheck()
             } else {
                 // 恢复状态，直接更新UI
                 if connectedSince == nil {
@@ -131,7 +131,7 @@ class VPNConnectionViewModel: ObservableObject {
                     connectedSince = now
                     UserDefaults.standard.set(
                         now.timeIntervalSince1970,
-                        forKey: connectedSinceKey
+                        forKey: connectionTimestampKey
                     )
                 }
                 startTimerIfNeeded()
@@ -139,12 +139,12 @@ class VPNConnectionViewModel: ObservableObject {
             }
             
         case .disconnected, .invalid:
-            debugPrint("VPNConnectionViewModel: 系统已断开")
+            debugPrint("TunnelStateManager: 系统已断开")
             connectionStatus = .disconnected
-            connectBySelf = false
+            userTriggered = false
             connectedSince = nil
             elapsedDisplay = ""
-            UserDefaults.standard.removeObject(forKey: connectedSinceKey)
+            UserDefaults.standard.removeObject(forKey: connectionTimestampKey)
             fakeLatencyText = "-- ms"
             fakeDownloadText = "0 Mbps"
             currentLatency = 0
@@ -154,22 +154,22 @@ class VPNConnectionViewModel: ObservableObject {
             stopTimer()
             
         case .connecting:
-            debugPrint("VPNConnectionViewModel: 系统连接中")
+            debugPrint("TunnelStateManager: 系统连接中")
             connectionStatus = .connecting
             
         case .disconnecting, .reasserting:
-            debugPrint("VPNConnectionViewModel: 系统断开中/重新连接中")
+            debugPrint("TunnelStateManager: 系统断开中/重新连接中")
             connectionStatus = .connecting
             
         @unknown default:
-            debugPrint("VPNConnectionViewModel: 未知状态")
+            debugPrint("TunnelStateManager: 未知状态")
             connectionStatus = .failed
-            connectBySelf = false
+            userTriggered = false
         }
     }
     
     /// 执行连接后的任务（接口调用、验证等）- 仅用户主动连接时调用
-    private func performPostConnectionTasks() {
+    private func runConnectionCheck() {
         // TODO: 在这里实现你的业务逻辑
         // 例如：调用接口验证、测试网络连接等
         
@@ -184,22 +184,22 @@ class VPNConnectionViewModel: ObservableObject {
                     self.connectedSince = now
                     UserDefaults.standard.set(
                         now.timeIntervalSince1970,
-                        forKey: self.connectedSinceKey
+                        forKey: self.connectionTimestampKey
                     )
                 }
                 self.startTimerIfNeeded()
                 self.connectionStatus = .connected
             } else {
                 // 验证失败，主动断开
-                debugPrint("VPNConnectionViewModel: 连接后验证失败，主动断开")
-                self.manager.stopConnection()
+                debugPrint("TunnelStateManager: 连接后验证失败，主动断开")
+                self.tunnelService.stopConnection()
                 self.connectionStatus = .failed
                 self.connectedSince = nil
                 self.elapsedDisplay = ""
-                UserDefaults.standard.removeObject(forKey: self.connectedSinceKey)
+                UserDefaults.standard.removeObject(forKey: self.connectionTimestampKey)
                 self.stopTimer()
             }
-            self.connectBySelf = false
+            self.userTriggered = false
         }
     }
     
@@ -209,7 +209,7 @@ class VPNConnectionViewModel: ObservableObject {
         
         switch connectionStatus {
         case .disconnected, .failed:
-            startConnection()
+            launchConnection()
         case .connected:
             showDisconnectConfirm = true
         case .connecting:
@@ -218,50 +218,50 @@ class VPNConnectionViewModel: ObservableObject {
     }
     
     /// 开始连接（用户主动连接）
-    private func startConnection() {
-        connectBySelf = true  // 标记为用户主动连接
+    private func launchConnection() {
+        userTriggered = true  // 标记为用户主动连接
         connectionStatus = .connecting  // 先更新UI状态
         connectedSince = nil
         elapsedDisplay = ""
         stopTimer()
         
-        manager.loadFromPreferences { [weak self] error in
+        tunnelService.loadFromPreferences { [weak self] error in
             guard let self = self else { return }
             if let error = error {
-                debugPrint("VPNConnectionViewModel: 加载配置失败 - \(error)")
+                debugPrint("TunnelStateManager: 加载配置失败 - \(error)")
                 self.connectionStatus = .failed
-                self.connectBySelf = false
+                self.userTriggered = false
                 return
             }
             
-            self.manager.enableAndConfigure { error in
+            self.tunnelService.enableAndConfigure { error in
                 if let error = error {
-                    debugPrint("VPNConnectionViewModel: 配置失败 - \(error)")
+                    debugPrint("TunnelStateManager: 配置失败 - \(error)")
                     self.connectionStatus = .failed
-                    self.connectBySelf = false
+                    self.userTriggered = false
                     return
                 }
                 
-                self.manager.startConnection { error in
+                self.tunnelService.startConnection { error in
                     if let error = error {
-                        debugPrint("VPNConnectionViewModel: 启动连接失败 - \(error)")
+                        debugPrint("TunnelStateManager: 启动连接失败 - \(error)")
                         self.connectionStatus = .failed
-                        self.connectBySelf = false
+                        self.userTriggered = false
                     }
-                    // 成功启动后，等待系统状态变化通知（会触发 applyStateToUI）
+                    // 成功启动后，等待系统状态变化通知（会触发 updateViewFromSystemState）
                 }
             }
         }
     }
     
     /// 确认断开
-    func confirmDisconnect() {
+    func shutdownConnection() {
         showDisconnectConfirm = false
-        connectBySelf = false
+        userTriggered = false
         connectionStatus = .connecting
         
-        manager.stopConnection()
-        // 等待系统状态变化通知来更新UI（会触发 applyStateToUI）
+        tunnelService.stopConnection()
+        // 等待系统状态变化通知来更新UI（会触发 updateViewFromSystemState）
     }
     
     /// 取消断开

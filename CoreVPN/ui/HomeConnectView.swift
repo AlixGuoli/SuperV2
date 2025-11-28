@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HomeConnectView: View {
-    @StateObject private var viewModel = VPNConnectionViewModel()
+    @StateObject private var viewModel = TunnelStateManager()
     @EnvironmentObject private var nodeStore: NodeSelectionStore
     @EnvironmentObject private var tabSelection: TabSelection
     
@@ -188,7 +188,7 @@ struct HomeConnectView: View {
             if viewModel.showDisconnectConfirm {
                 DisconnectConfirmView(
                     onConfirm: {
-                        viewModel.confirmDisconnect()
+                        viewModel.shutdownConnection()
                     },
                     onCancel: {
                         viewModel.cancelDisconnect()

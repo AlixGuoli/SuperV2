@@ -1,5 +1,5 @@
 //
-//  VPNManager.swift
+//  TunnelService.swift
 //  CoreVPN
 //
 //  Created by SHI QIU on 2025/11/27.
@@ -8,20 +8,22 @@
 import Foundation
 import NetworkExtension
 
-class VPNManager {
+class TunnelService {
     
-    public var coreMgr: NETunnelProviderManager
+    private static let tunnelServiceName = "Super V2ray Tunnel"
     
-    private static var sharedInstance: VPNManager = {
-        return VPNManager()
+    public var tunnelProvider: NETunnelProviderManager
+    
+    private static var defaultInstance: TunnelService = {
+        return TunnelService()
     }()
     
-    public class func shared() -> VPNManager {
-        return sharedInstance
+    public class func shared() -> TunnelService {
+        return defaultInstance
     }
     
     public init() {
-        self.coreMgr = NETunnelProviderManager()
+        self.tunnelProvider = NETunnelProviderManager()
     }
     
     /// 只读取已有配置，不创建（用于恢复状态，避免触发权限）
@@ -41,8 +43,8 @@ class VPNManager {
             }
             
             // 有配置，加载它
-            self.coreMgr = managers[0]
-            self.coreMgr.loadFromPreferences { error in
+            self.tunnelProvider = managers[0]
+            self.tunnelProvider.loadFromPreferences { error in
                 completion(true, error)
             }
         }
@@ -62,9 +64,9 @@ class VPNManager {
                 // 创建新的配置
                 let providerManager = NETunnelProviderManager()
                 let protocolConfig = NETunnelProviderProtocol()
-                protocolConfig.serverAddress = "Core VPN"
+                protocolConfig.serverAddress = Self.tunnelServiceName
                 providerManager.protocolConfiguration = protocolConfig
-                providerManager.localizedDescription = "Core VPN"
+                providerManager.localizedDescription = Self.tunnelServiceName
                 providerManager.isEnabled = true
                 
                 providerManager.saveToPreferences { error in
@@ -73,14 +75,14 @@ class VPNManager {
                         return
                     }
                     providerManager.loadFromPreferences { error in
-                        self.coreMgr = providerManager
+                        self.tunnelProvider = providerManager
                         completion(error)
                     }
                 }
             } else {
                 // 使用已存在的配置
-                self.coreMgr = managers[0]
-                self.coreMgr.loadFromPreferences { error in
+                self.tunnelProvider = managers[0]
+                self.tunnelProvider.loadFromPreferences { error in
                     completion(error)
                 }
             }
@@ -89,14 +91,14 @@ class VPNManager {
     
     /// 启用并保存VPN配置
     public func enableAndConfigure(completion: @escaping (Error?) -> Void) {
-        coreMgr.isEnabled = true
-        coreMgr.saveToPreferences { [weak self] error in
+        tunnelProvider.isEnabled = true
+        tunnelProvider.saveToPreferences { [weak self] error in
             guard let self = self else { return }
             guard error == nil else {
                 completion(error)
                 return
             }
-            self.coreMgr.loadFromPreferences { error in
+            self.tunnelProvider.loadFromPreferences { error in
                 completion(error)
             }
         }
@@ -104,13 +106,13 @@ class VPNManager {
     
     /// 启动VPN连接
     public func startConnection(completion: @escaping (Error?) -> Void) {
-        if coreMgr.connection.status == .disconnected || coreMgr.connection.status == .invalid {
+        if tunnelProvider.connection.status == .disconnected || tunnelProvider.connection.status == .invalid {
             do {
-                debugPrint("VPNManager: 启动VPN连接")
-                try coreMgr.connection.startVPNTunnel()
+                debugPrint("TunnelService: 启动VPN连接")
+                try tunnelProvider.connection.startVPNTunnel()
                 completion(nil)
             } catch {
-                debugPrint("VPNManager: 启动连接失败 - \(error)")
+                debugPrint("TunnelService: 启动连接失败 - \(error)")
                 completion(error)
             }
         } else {
@@ -120,9 +122,9 @@ class VPNManager {
     
     /// 停止VPN连接
     public func stopConnection() {
-        if coreMgr.connection.status == .connected || coreMgr.connection.status == .connecting {
-            debugPrint("VPNManager: 停止VPN连接")
-            coreMgr.connection.stopVPNTunnel()
+        if tunnelProvider.connection.status == .connected || tunnelProvider.connection.status == .connecting {
+            debugPrint("TunnelService: 停止VPN连接")
+            tunnelProvider.connection.stopVPNTunnel()
         }
     }
 }
