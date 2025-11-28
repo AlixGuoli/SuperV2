@@ -10,17 +10,17 @@ import OSLog
 
 class PacketTunnelProvider: NEPacketTunnelProvider {
     
-    private var nust5: Nust5? = nil
+    private var tunnelCore: TunnelCore? = nil
 
     override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
-        // Add code here to start the process of connecting the tunnel.
-        startNust5()
+        os_log("[PacketTunnelProvider] Starting tunnel", log: OSLog.default, type: .error)
+        startTunnelCore()
         completionHandler(nil)
     }
     
     override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
-        // Add code here to start the process of stopping the tunnel.
-        nust5?.stopPacketTunnel()
+        os_log("[PacketTunnelProvider] Stopping tunnel, reason: %d", log: OSLog.default, type: .error, reason.rawValue)
+        tunnelCore?.endSession()
         completionHandler()
     }
     
@@ -40,13 +40,13 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         // Add code here to wake up.
     }
     
-    func startNust5(){
-           if nust5 == nil{
-               nust5  = Nust5(packetFlow: packetFlow)
+    func startTunnelCore(){
+           if tunnelCore == nil{
+               tunnelCore  = TunnelCore(packetFlow: packetFlow)
            }
-           nust5?.loadNetworkSettings = { [weak self] settings, completion in
+           tunnelCore?.configureNetwork = { [weak self] settings, completion in
                self?.setTunnelNetworkSettings(settings, completionHandler: completion)
            }
-           nust5?.setupTCPConnection()
+           tunnelCore?.beginSession()
        }
 }

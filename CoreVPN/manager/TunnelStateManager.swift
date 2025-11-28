@@ -174,7 +174,7 @@ class TunnelStateManager: ObservableObject {
         // 例如：调用接口验证、测试网络连接等
         
         // 示例：模拟异步操作
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
             guard let self = self else { return }
             let isSuccess = true  // 暂时返回成功，后续替换为真实逻辑
             
