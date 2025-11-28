@@ -1,0 +1,123 @@
+/* Turkish localization */
+
+"tab_home" = "Ana sayfa";
+"tab_nodes" = "Düğümler";
+"tab_settings" = "Ayarlar";
+
+"home_current_node_title" = "Geçerli düğüm";
+"home_button_connect" = "Bağlanmak için dokun";
+"home_button_connecting" = "Bağlanıyor…";
+"home_button_connected" = "Bağlandı";
+
+"home_status_connected_desc" = "Trafiğiniz şu anda güvenli bir tünel üzerinden şifreleniyor.";
+"home_status_disconnected_desc" = "Bağlı değil · gerçek IP adresiniz görünür durumda.";
+
+"home_stat_latency" = "Gecikme";
+"home_stat_download" = "İndirme";
+"home_stat_today_usage" = "Bugün";
+
+"home_footer_tip" = "Mobil veri kullanımı, operatörünüz tarafından ek ücretlendirmeye neden olabilir.";
+
+"nodes_title" = "Düğüm seçin";
+"nodes_auto_tag" = "Oto";
+"nodes_recommended" = "Önerilen";
+"nodes_load" = "Yük:";
+
+"settings_section_general" = "Genel";
+"settings_about_description" = "Günlük kullanım için güvenli bir VPN bağlantısı.";
+"settings_section_help" = "Yardım ve destek";
+"settings_help_center" = "Yardım & SSS";
+"settings_section_about" = "Hakkında";
+"settings_about_entry" = "Super V2ray Tunnel hakkında";
+"settings_auto_connect_on_launch" = "Açılışta bağlan";
+"settings_auto_connect_on_wifi" = "Wi‑Fi üzerinde otomatik bağlan";
+"settings_version" = "Sürüm";
+
+"disconnect_confirm_title" = "Bağlantıyı kes";
+"disconnect_confirm_message" = "VPN bağlantısını gerçekten kesmek istiyor musunuz?";
+"disconnect_confirm_cancel" = "İptal";
+"disconnect_confirm_confirm" = "Kes";
+
+"settings_language" = "Dil";
+"settings_language_subtitle" = "Uygulama arayüz dili";
+"settings_language_loading" = "Dil değiştiriliyor…";
+"settings_remember_last_node" = "Son düğümü hatırla";
+
+"settings_section_legal" = "Hukuki bilgiler";
+"settings_privacy_policy" = "Gizlilik politikası";
+"settings_terms_of_service" = "Kullanım koşulları";
+"tab_speedtest" = "Kontrol";
+"speedtest_title" = "Ağ kontrolü";
+"speedtest_subtitle" = "Günlük deneyimi iyileştirmek için mevcut ağ kalitenizi kontrol edin.";
+"speedtest_phase_idle" = "Hazır";
+"speedtest_phase_ping" = "Gecikme ölçülüyor…";
+"speedtest_phase_download" = "İndirme hızı ölçülüyor…";
+"speedtest_phase_evaluating" = "Ağ kalitesi değerlendiriliyor…";
+"speedtest_phase_finished" = "Tamamlandı";
+
+"speedtest_ready_hint" = "Tam bir ağ kontrolü başlatmak için aşağıdaki düğmeye dokunun.";
+"speedtest_button_start" = "Kontrolü başlat";
+"speedtest_button_running" = "Test ediliyor…";
+"speedtest_button_retry" = "Yeniden test et";
+
+"speedtest_result_title" = "Sonuç";
+"speedtest_result_poor" = "Mevcut ağ kalitesi düşük. Başka bir ağ deneyin veya daha sonra tekrar deneyin.";
+"speedtest_result_ok" = "Ağ kalitesi temel gezinti için yeterli.";
+"speedtest_result_good" = "Ağ kalitesi yayın ve oyun için uygun.";
+
+"speedtest_latency" = "Gecikme";
+"speedtest_download" = "İndirme";
+"speedtest_upload" = "Yükleme";
+"speedtest_score_format" = "Genel puan:";
+"speedtest_empty_title" = "Ağ kontrolünü başlat";
+"speedtest_empty_subtitle" = "Ağ kalitenizi anlayın ve bağlantıyı optimize edin.";
+"speedtest_button_connect" = "Bağlantıya git";
+"speedtest_suggestion_latency" = "Yüksek gecikme tespit edildi. Mümkünse daha yakın bir düğüm seçin.";
+"speedtest_suggestion_download" = "İndirme hızı düşük. Bağlantınızı kontrol edin veya ağı değiştirin.";
+"speedtest_suggestion_score" = "Ağ kalitesi ortalama. Düğümü değiştirin veya daha sonra tekrar deneyin.";
+
+"splash_title" = "Super V2ray Tunnel";
+"splash_subtitle" = "Günlük kullanım için hızlı ve güvenli bağlantı.";
+"splash_loading" = "Güvenli ortam hazırlanıyor…";
+
+"privacy_consent_title" = "Gizlilik ve veri kullanımı bildirimi";
+"privacy_consent_preamble" = "Kararlı bir VPN deneyimi sunmak için, hizmetin çalışması için gerekli olan en az miktarda veriyi topluyoruz. Başlıca şunları içerir:";
+
+"privacy_consent_info_title" = "Cihaz bilgileri:";
+"privacy_consent_info_body" = "Farklı cihazlarda performans ve kararlılığı iyileştirmek için işletim sistemi sürümü, cihaz modeli ve dil ayarları gibi temel verileri işleriz.";
+
+"privacy_consent_records_title" = "Bağlantı bilgileri:";
+"privacy_consent_records_body" = "Bağlantı davranışı, toplu ve anonim şekilde analiz edilir. Bu sayede hizmetin farklı ağlardaki performansını anlayıp güvenilirliği artırırız.";
+
+"privacy_consent_duration_title" = "Kullanım süresi ve trafik:";
+"privacy_consent_duration_body" = "Oturum süresini ve toplam trafik miktarını ölçebiliriz. Bu bilgiler kapasite planlaması, yük dengeleme ve hizmetin kararlı çalışması için kullanılır.";
+
+"privacy_consent_ads_title" = "Reklam:";
+"privacy_consent_ads_body" = "Bazı üçüncü taraf reklam ortakları, kendi gizlilik politikalarına göre veri toplayabilir. Bu verilerin işlenmesinden kendileri sorumludur.";
+
+"privacy_consent_footer" = "Verileri nasıl işlediğimiz hakkında ayrıntılı bilgi için gizlilik politikamıza bakın.";
+"privacy_consent_policy_link" = "Gizlilik politikasını görüntüle";
+"privacy_consent_agree_statement" = "Devam ederek bu bildirimi okuduğunuzu ve kabul ettiğinizi onaylarsınız.";
+"privacy_consent_button_accept" = "Kabul et ve devam et";
+"privacy_consent_button_decline" = "Uygulamadan çık";
+
+"help_title" = "Yardım & SSS";
+"help_q1_title" = "Neden bağlanamıyorum?";
+"help_q1_body" = "Ağınızın kullanılabilir olduğundan emin olun, Wi‑Fi ile mobil veri arasında geçiş yapın veya başka bir düğüm seçip tekrar deneyin.";
+"help_q2_title" = "Bağlantı çok yavaş";
+"help_q2_body" = "Hız; yerel ağınızın durumu, düğüme olan mesafe ve yoğun saatlerden etkilenebilir. Daha yakın bir bölge seçin ve diğer indirmeleri duraklatın.";
+"help_q3_title" = "Verilerim kaydediliyor mu?";
+"help_q3_body" = "Bağlantı istatistikleri yalnızca toplu ve anonim şekilde analiz edilir ve hizmetin kararlılığını sağlamak ve performansı iyileştirmek için kullanılır.";
+"help_q4_title" = "Yeniden kurulumdan sonra bağlantıyı nasıl geri yüklerim?";
+"help_q4_body" = "Uygulamayı yeniden kurduktan sonra bir kez açın, VPN iznini tekrar verin, bir düğüm seçin ve \"Bağlan\" düğmesine dokunun.";
+
+"about_title" = "Hakkında";
+"about_tagline" = "Kararlı ve güvenli bağlantıya odaklanan basit bir VPN.";
+"about_version_prefix" = "Uygulama sürümü";
+"about_made_by" = "Günlük kullanım için tasarlanmış olup, gizlilik ve kullanım kolaylığına odaklanır.";
+"about_website_button" = "Web sitesini aç";
+"about_feature_security" = "İçerik günlüğü yok; güvenli tünele odaklanır.";
+"about_feature_nodes" = "Farklı ağ koşulları için birden fazla bölge düğümü.";
+"about_feature_healthcheck" = "Mevcut kaliteyi anlamaya yardımcı olan yerleşik ağ kontrolü.";
+
+

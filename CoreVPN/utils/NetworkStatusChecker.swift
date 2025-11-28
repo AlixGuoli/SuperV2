@@ -27,7 +27,7 @@ final class NetworkStatusChecker {
                     status = "ethernet"
                 }
             }
-            debugPrint("CoreVPN NetworkStatusChecker – current path: \(status)")
+            debugPrint("Super V2ray Tunnel NetworkStatusChecker – current path: \(status)")
             // 收到一次状态就可以停掉监听
             self.monitor.cancel()
         }

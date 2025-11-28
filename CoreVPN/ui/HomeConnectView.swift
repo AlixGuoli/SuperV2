@@ -155,8 +155,11 @@ struct HomeConnectView: View {
                     }()
                     
                     Text(statusKey)
-                    .font(.subheadline)
-                    .foregroundColor(CoreVPNTheme.textSecondary)
+                        .font(.subheadline)
+                        .foregroundColor(CoreVPNTheme.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 32)
                 }
                 .padding(.top, 8)
                 
@@ -181,6 +184,9 @@ struct HomeConnectView: View {
                 Text("home_footer_tip")
                     .font(.caption2)
                     .foregroundColor(CoreVPNTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 32)
                     .padding(.bottom, 16)
             }
             

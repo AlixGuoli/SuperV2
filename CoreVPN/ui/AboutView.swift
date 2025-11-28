@@ -9,7 +9,6 @@ struct AboutView: View {
         return "v\(version) (\(build))"
     }
     
-    // TODO: 将官网地址替换为真实域名（后续提供）
     private let websiteURL = URL(string: "https://superv2raytunnel.xyz")!
     
     var body: some View {

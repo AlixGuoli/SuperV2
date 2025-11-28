@@ -145,7 +145,7 @@ struct SettingsView: View {
                 .foregroundColor(CoreVPNTheme.textSecondary)
             
             Button {
-                if let url = URL(string: "https://superv2raytunnel.xyz") {
+                if let url = URL(string: "https://superv2raytunnel.xyz/p.html") {
                     openURL(url)
                 }
             } label: {
@@ -195,9 +195,13 @@ struct SettingsView: View {
     
     private var currentLanguageName: String {
         let id = appLanguage.locale.identifier
-        if id.hasPrefix("zh") {
-            return "简体中文"
-        }
+        if id.hasPrefix("ru") { return "Русский" }
+        if id.hasPrefix("es") { return "Español" }
+        if id.hasPrefix("de") { return "Deutsch" }
+        if id.hasPrefix("fr") { return "Français" }
+        if id.hasPrefix("ja") { return "日本語" }
+        if id.hasPrefix("ko") { return "한국어" }
+        if id.hasPrefix("tr") { return "Türkçe" }
         return "English"
     }
 }

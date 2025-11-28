@@ -6,7 +6,7 @@ struct PrivacyConsentView: View {
     
     @Environment(\.openURL) private var openURL
     
-    private let privacyPolicyURL = URL(string: "https://superv2raytunnel.xyz")!
+    private let privacyPolicyURL = URL(string: "https://superv2raytunnel.xyz/p.html")!
     
     var body: some View {
         ZStack {

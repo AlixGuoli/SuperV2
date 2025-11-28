@@ -1,0 +1,123 @@
+/* Japanese localization */
+
+"tab_home" = "ホーム";
+"tab_nodes" = "ノード";
+"tab_settings" = "設定";
+
+"home_current_node_title" = "現在のノード";
+"home_button_connect" = "タップして接続";
+"home_button_connecting" = "接続中…";
+"home_button_connected" = "接続済み";
+
+"home_status_connected_desc" = "通信は安全なトンネルを通じて暗号化されています。";
+"home_status_disconnected_desc" = "未接続 · 実際の IP が公開されています。";
+
+"home_stat_latency" = "レイテンシ";
+"home_stat_download" = "ダウンロード";
+"home_stat_today_usage" = "本日";
+
+"home_footer_tip" = "モバイルデータ通信を使用すると、通信事業者から追加料金が発生する場合があります。";
+
+"nodes_title" = "ノードを選択";
+"nodes_auto_tag" = "自動";
+"nodes_recommended" = "おすすめ";
+"nodes_load" = "負荷:";
+
+"settings_section_general" = "一般";
+"settings_about_description" = "日常利用向けの安全な VPN 接続。";
+"settings_section_help" = "ヘルプとサポート";
+"settings_help_center" = "ヘルプ & FAQ";
+"settings_section_about" = "このアプリについて";
+"settings_about_entry" = "Super V2ray Tunnel について";
+"settings_auto_connect_on_launch" = "起動時に自動接続";
+"settings_auto_connect_on_wifi" = "Wi‑Fi で自動接続";
+"settings_version" = "バージョン";
+
+"disconnect_confirm_title" = "接続解除";
+"disconnect_confirm_message" = "本当に VPN 接続を解除しますか？";
+"disconnect_confirm_cancel" = "キャンセル";
+"disconnect_confirm_confirm" = "解除";
+
+"settings_language" = "言語";
+"settings_language_subtitle" = "アプリの表示言語";
+"settings_language_loading" = "言語を切り替えています…";
+"settings_remember_last_node" = "最後のノードを記憶";
+
+"settings_section_legal" = "法的情報";
+"settings_privacy_policy" = "プライバシーポリシー";
+"settings_terms_of_service" = "利用規約";
+"tab_speedtest" = "チェック";
+"speedtest_title" = "ネットワーク診断";
+"speedtest_subtitle" = "現在のネットワーク品質を確認し、日常の利用体験を最適化します。";
+"speedtest_phase_idle" = "待機中";
+"speedtest_phase_ping" = "レイテンシ計測中…";
+"speedtest_phase_download" = "ダウンロード速度計測中…";
+"speedtest_phase_evaluating" = "ネットワーク品質を評価中…";
+"speedtest_phase_finished" = "完了";
+
+"speedtest_ready_hint" = "下のボタンをタップしてネットワーク診断を開始してください。";
+"speedtest_button_start" = "診断を開始";
+"speedtest_button_running" = "診断中…";
+"speedtest_button_retry" = "再テスト";
+
+"speedtest_result_title" = "結果";
+"speedtest_result_poor" = "現在のネットワーク品質は低いです。別のネットワークを試すか、時間をおいて再度テストしてください。";
+"speedtest_result_ok" = "基本的なブラウジングには十分なネットワーク品質です。";
+"speedtest_result_good" = "ストリーミングやゲームにも適したネットワーク品質です。";
+
+"speedtest_latency" = "レイテンシ";
+"speedtest_download" = "ダウンロード";
+"speedtest_upload" = "アップロード";
+"speedtest_score_format" = "総合スコア:";
+"speedtest_empty_title" = "ネットワーク診断を開始";
+"speedtest_empty_subtitle" = "ネットワーク品質を把握し、接続を最適化しましょう。";
+"speedtest_button_connect" = "接続画面へ";
+"speedtest_suggestion_latency" = "レイテンシが高く検出されました。より近いノードを選択してみてください。";
+"speedtest_suggestion_download" = "ダウンロード速度が低いです。回線状態を確認するか、別のネットワークを試してください。";
+"speedtest_suggestion_score" = "ネットワーク品質は平均的です。ノードを変更するか、後でもう一度テストしてください。";
+
+"splash_title" = "Super V2ray Tunnel";
+"splash_subtitle" = "毎日のための速くて安全なネットワーク接続。";
+"splash_loading" = "安全な環境を準備しています…";
+
+"privacy_consent_title" = "プライバシーとデータ利用に関するお知らせ";
+"privacy_consent_preamble" = "安定した VPN 体験を提供するために、サービス運営に必要な最小限の情報のみを収集します。主な内容は次のとおりです。";
+
+"privacy_consent_info_title" = "デバイス情報:";
+"privacy_consent_info_body" = "OS バージョン、端末モデル、言語設定などの基本情報を処理し、さまざまな端末での安定性とパフォーマンスを向上させます。";
+
+"privacy_consent_records_title" = "接続に関する情報:";
+"privacy_consent_records_body" = "接続の挙動は集計・匿名化された形で分析され、ウェブサイトやアプリへのアクセス時の安定性と信頼性を高めるために利用されます.";
+
+"privacy_consent_duration_title" = "利用時間と通信量:";
+"privacy_consent_duration_body" = "セッション時間や総通信量を測定する場合があります。これらのデータは、容量計画や負荷分散、サービスの安定運用に役立ちます。";
+
+"privacy_consent_ads_title" = "広告:";
+"privacy_consent_ads_body" = "一部の第三者広告パートナーは、それぞれのプライバシーポリシーに従ってデータを収集する場合があります。これらのデータの扱いについては各社が責任を負います。";
+
+"privacy_consent_footer" = "データの取り扱いに関する詳細は、プライバシーポリシーをご確認ください。";
+"privacy_consent_policy_link" = "プライバシーポリシーを表示";
+"privacy_consent_agree_statement" = "続行することで、このお知らせを読み同意したものとみなされます。";
+"privacy_consent_button_accept" = "同意して続行";
+"privacy_consent_button_decline" = "アプリを終了";
+
+"help_title" = "ヘルプ & FAQ";
+"help_q1_title" = "なぜ接続できませんか？";
+"help_q1_body" = "ネットワークが利用可能か確認し、Wi‑Fi とモバイルデータを切り替えるか、別のノードを選んで再度接続してください。";
+"help_q2_title" = "接続が遅いです";
+"help_q2_body" = "速度はローカルネットワークの状態、ノードまでの距離、混雑時間帯などの影響を受けます。より近い地域を選び、他のダウンロードを一時停止してみてください。";
+"help_q3_title" = "通信内容は記録されますか？";
+"help_q3_body" = "接続統計は集計・匿名化された形でのみ分析され、サービスの安定性とパフォーマンス向上のためだけに使用されます。";
+"help_q4_title" = "再インストール後、どうやって接続を復元しますか？";
+"help_q4_body" = "アプリを再インストールした後、一度起動して VPN 許可を再度与え、ノードを選択して「接続」をタップしてください。";
+
+"about_title" = "このアプリについて";
+"about_tagline" = "安定した安全な接続に特化したシンプルな VPN。";
+"about_version_prefix" = "アプリバージョン";
+"about_made_by" = "日常利用を想定し、プライバシーと使いやすさを重視して設計されています。";
+"about_website_button" = "Web サイトを開く";
+"about_feature_security" = "コンテンツのログなし · 安全なトンネルに特化。";
+"about_feature_nodes" = "さまざまなネットワーク環境に対応する複数の地域ノード。";
+"about_feature_healthcheck" = "現在の品質を把握できるネットワーク診断機能を内蔵。";
+
+

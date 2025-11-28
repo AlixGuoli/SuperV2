@@ -8,7 +8,7 @@
 import SwiftUI
 
 private struct AppLanguageOption: Identifiable {
-    let id: String      // 语言代码，例如 "en", "zh-Hans"
+    let id: String      // 语言代码，例如 "en", "ru"
     let name: String    // 展示名称
 }
 
@@ -17,15 +17,27 @@ struct LanguageView: View {
     @State private var isSwitching: Bool = false
     @State private var pendingCode: String?
     
-    // 目前只放 EN / ZH，占位，后续你可以在这里加更多语言
+    // 正式版语言选项（已移除中文，仅保留非中文语言）
     private let options: [AppLanguageOption] = [
-        .init(id: "en", name: "English"),
-        .init(id: "zh-Hans", name: "简体中文")
+        .init(id: "en",     name: "English"),
+        .init(id: "ru",     name: "Русский"),
+        .init(id: "es",     name: "Español"),
+        .init(id: "de",     name: "Deutsch"),
+        .init(id: "fr",     name: "Français"),
+        .init(id: "ja",     name: "日本語"),
+        .init(id: "ko",     name: "한국어"),
+        .init(id: "tr",     name: "Türkçe")
     ]
     
     private var currentCode: String {
         let id = appLanguage.locale.identifier
-        if id.hasPrefix("zh") { return "zh-Hans" }
+        if id.hasPrefix("ru") { return "ru" }
+        if id.hasPrefix("es") { return "es" }
+        if id.hasPrefix("de") { return "de" }
+        if id.hasPrefix("fr") { return "fr" }
+        if id.hasPrefix("ja") { return "ja" }
+        if id.hasPrefix("ko") { return "ko" }
+        if id.hasPrefix("tr") { return "tr" }
         return "en"
     }
     

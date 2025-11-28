@@ -1,0 +1,123 @@
+/* Russian localization */
+
+"tab_home" = "Главная";
+"tab_nodes" = "Узлы";
+"tab_settings" = "Настройки";
+
+"home_current_node_title" = "Текущий узел";
+"home_button_connect" = "Нажмите, чтобы подключиться";
+"home_button_connecting" = "Подключение…";
+"home_button_connected" = "Подключено";
+
+"home_status_connected_desc" = "Ваш трафик сейчас шифруется через защищённый туннель.";
+"home_status_disconnected_desc" = "Нет подключения · ваш реальный IP виден.";
+
+"home_stat_latency" = "Задержка";
+"home_stat_download" = "Скачивание";
+"home_stat_today_usage" = "За сегодня";
+
+"home_footer_tip" = "При использовании сотовой связи оператор может взимать дополнительную плату.";
+
+"nodes_title" = "Выберите узел";
+"nodes_auto_tag" = "Авто";
+"nodes_recommended" = "Рекомендуется";
+"nodes_load" = "Нагр.:";
+
+"settings_section_general" = "Основные";
+"settings_about_description" = "Безопасное VPN‑подключение для повседневного использования.";
+"settings_section_help" = "Помощь и поддержка";
+"settings_help_center" = "Справка и FAQ";
+"settings_section_about" = "О приложении";
+"settings_about_entry" = "О Super V2ray Tunnel";
+"settings_auto_connect_on_launch" = "Подключаться при запуске";
+"settings_auto_connect_on_wifi" = "Автоподключение по Wi‑Fi";
+"settings_version" = "Версия";
+
+"disconnect_confirm_title" = "Отключить";
+"disconnect_confirm_message" = "Действительно отключить VPN?";
+"disconnect_confirm_cancel" = "Отмена";
+"disconnect_confirm_confirm" = "Отключить";
+
+"settings_language" = "Язык";
+"settings_language_subtitle" = "Язык интерфейса приложения";
+"settings_language_loading" = "Переключаем язык…";
+"settings_remember_last_node" = "Запоминать последний узел";
+
+"settings_section_legal" = "Юридическая информация";
+"settings_privacy_policy" = "Политика конфиденциальности";
+"settings_terms_of_service" = "Условия использования";
+"tab_speedtest" = "Проверка";
+"speedtest_title" = "Проверка сети";
+"speedtest_subtitle" = "Проверьте текущее качество сети, чтобы улучшить ежедневное использование.";
+"speedtest_phase_idle" = "Готово";
+"speedtest_phase_ping" = "Измеряем задержку…";
+"speedtest_phase_download" = "Измеряем скорость скачивания…";
+"speedtest_phase_evaluating" = "Оцениваем качество сети…";
+"speedtest_phase_finished" = "Завершено";
+
+"speedtest_ready_hint" = "Нажмите кнопку ниже, чтобы запустить полную проверку сети.";
+"speedtest_button_start" = "Начать проверку";
+"speedtest_button_running" = "Тестирование…";
+"speedtest_button_retry" = "Повторить тест";
+
+"speedtest_result_title" = "Результат";
+"speedtest_result_poor" = "Текущее качество сети низкое. Попробуйте другую сеть или повторите тест позже.";
+"speedtest_result_ok" = "Этого качества сети достаточно для обычного серфинга.";
+"speedtest_result_good" = "Этого качества сети достаточно для стриминга и игр.";
+
+"speedtest_latency" = "Задержка";
+"speedtest_download" = "Скачивание";
+"speedtest_upload" = "Отдача";
+"speedtest_score_format" = "Общая оценка:";
+"speedtest_empty_title" = "Запустить проверку сети";
+"speedtest_empty_subtitle" = "Узнайте качество сети и оптимизируйте подключение.";
+"speedtest_button_connect" = "Перейти к подключению";
+"speedtest_suggestion_latency" = "Обнаружена высокая задержка. Попробуйте выбрать более близкий узел.";
+"speedtest_suggestion_download" = "Скорость скачивания низкая. Проверьте соединение или переключитесь на другую сеть.";
+"speedtest_suggestion_score" = "Качество сети среднее. Попробуйте сменить узел или повторить тест позже.";
+
+"splash_title" = "Super V2ray Tunnel";
+"splash_subtitle" = "Безопасное и быстрое подключение для ваших ежедневных задач.";
+"splash_loading" = "Подготовка защищённой среды…";
+
+"privacy_consent_title" = "Уведомление о конфиденциальности и данных";
+"privacy_consent_preamble" = "Чтобы обеспечить стабильную работу VPN, мы собираем только минимум данных, необходимых для работы сервиса. В основном это:";
+
+"privacy_consent_info_title" = "Информация об устройстве:";
+"privacy_consent_info_body" = "Мы обрабатываем базовые данные об устройстве, такие как версия ОС, модель и языковые настройки. Это помогает улучшать стабильность и производительность на разных устройствах.";
+
+"privacy_consent_records_title" = "Данные о подключениях:";
+"privacy_consent_records_body" = "Поведение подключений анализируется в агрегированном и обезличенном виде. Это нужно, чтобы понимать работу сервиса в разных сетях и повышать надёжность доступа к сайтам и приложениям.";
+
+"privacy_consent_duration_title" = "Время и объём трафика:";
+"privacy_consent_duration_body" = "Мы можем измерять длительность сессий и общий объём трафика. Эти данные помогают планировать ресурсы, балансировать нагрузку и поддерживать стабильную работу сервиса.";
+
+"privacy_consent_ads_title" = "Реклама:";
+"privacy_consent_ads_body" = "Некоторые сторонние рекламные партнёры могут собирать данные в соответствии со своими политиками конфиденциальности. Они самостоятельно отвечают за обращение с такой информацией.";
+
+"privacy_consent_footer" = "Подробности о том, как мы работаем с данными, см. в нашей Политике конфиденциальности.";
+"privacy_consent_policy_link" = "Открыть политику конфиденциальности";
+"privacy_consent_agree_statement" = "Продолжая, вы подтверждаете, что прочитали это уведомление и согласны с ним.";
+"privacy_consent_button_accept" = "Согласиться и продолжить";
+"privacy_consent_button_decline" = "Выйти из приложения";
+
+"help_title" = "Помощь и FAQ";
+"help_q1_title" = "Почему не удаётся подключиться?";
+"help_q1_body" = "Убедитесь, что сеть доступна, попробуйте переключиться между Wi‑Fi и сотовой сетью или выбрать другой узел и подключиться снова.";
+"help_q2_title" = "Соединение медленное";
+"help_q2_body" = "Скорость может зависеть от вашей локальной сети, расстояния до узла и нагрузки в часы пик. Попробуйте выбрать более близкий регион и приостановить другие загрузки.";
+"help_q3_title" = "Будут ли записываться мои данные?";
+"help_q3_body" = "Статистика подключений анализируется в агрегированном и обезличенном виде и используется только для поддержания стабильности сервиса и улучшения производительности.";
+"help_q4_title" = "Как восстановить подключение после переустановки?";
+"help_q4_body" = "После переустановки откройте приложение, снова разрешите VPN‑доступ, затем выберите узел и нажмите «Подключиться».";
+
+"about_title" = "О приложении";
+"about_tagline" = "Простой VPN, ориентированный на стабильное и безопасное подключение.";
+"about_version_prefix" = "Версия приложения";
+"about_made_by" = "Создано для ежедневного использования с упором на приватность и удобство.";
+"about_website_button" = "Открыть сайт";
+"about_feature_security" = "Без логов содержимого; упор на защищённый туннель.";
+"about_feature_nodes" = "Несколько регионов для разных сетевых условий.";
+"about_feature_healthcheck" = "Встроенная проверка сети, чтобы понимать текущее качество.";
+
+
