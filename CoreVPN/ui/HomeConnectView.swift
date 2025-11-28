@@ -22,8 +22,7 @@ struct HomeConnectView: View {
     
     var body: some View {
         ZStack {
-            CoreVPNTheme.background
-                .ignoresSafeArea()
+            HomeBackgroundView()
             
             VStack(spacing: 24) {
                 // 顶部：当前节点
@@ -55,72 +54,89 @@ struct HomeConnectView: View {
                 
                 Spacer()
                 
-                // 中部：大按钮
+                // 中部：大按钮 + 本地环形装饰（跟随按钮位置）
                 ZStack {
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                gradient: Gradient(colors: [
-                                    CoreVPNTheme.brandOrange.opacity(0.35),
-                                    .clear
-                                ]),
-                                center: .center,
-                                startRadius: 10,
-                                endRadius: 180
-                            )
-                        )
-                        .blur(radius: 20)
+                    // 环形装饰：淡淡的科技感圈，只围绕按钮
+                    ZStack {
+                        Circle()
+                            .stroke(Color.white.opacity(0.03), lineWidth: 1)
+                            .frame(width: 260, height: 260)
+                        Circle()
+                            .stroke(Color.white.opacity(0.025), lineWidth: 1)
+                            .frame(width: 310, height: 310)
+                        Circle()
+                            .stroke(Color.white.opacity(0.02), lineWidth: 1)
+                            .frame(width: 360, height: 360)
+                    }
+                    .blendMode(.screen)
                     
-                    Button(action: {
-                        viewModel.toggleConnection()
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(CoreVPNTheme.cardBackground)
-                            Circle()
-                                .strokeBorder(
-                                    AngularGradient(
-                                        gradient: Gradient(colors: [
-                                            CoreVPNTheme.brandOrange,
-                                            CoreVPNTheme.brandOrangeSoft,
-                                            CoreVPNTheme.brandOrange
-                                        ]),
-                                        center: .center
-                                    ),
-                                    lineWidth: 3
+                    // 原有按钮本体
+                    ZStack {
+                        Circle()
+                            .fill(
+                                RadialGradient(
+                                    gradient: Gradient(colors: [
+                                        CoreVPNTheme.brandOrange.opacity(0.35),
+                                        .clear
+                                    ]),
+                                    center: .center,
+                                    startRadius: 10,
+                                    endRadius: 180
                                 )
-                                .shadow(color: CoreVPNTheme.brandOrange.opacity(0.6),
-                                        radius: isConnected ? 18 : 8)
-                            
-                            VStack(spacing: 6) {
-                                Image(systemName: isConnected ? "lock.shield.fill" : "power")
-                                    .font(.system(size: 32, weight: .semibold))
-                                    .foregroundColor(isConnected ? CoreVPNTheme.successGreen : CoreVPNTheme.brandOrange)
+                            )
+                            .blur(radius: 20)
+                        
+                        Button(action: {
+                            viewModel.toggleConnection()
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(CoreVPNTheme.cardBackground)
+                                Circle()
+                                    .strokeBorder(
+                                        AngularGradient(
+                                            gradient: Gradient(colors: [
+                                                CoreVPNTheme.brandOrange,
+                                                CoreVPNTheme.brandOrangeSoft,
+                                                CoreVPNTheme.brandOrange
+                                            ]),
+                                            center: .center
+                                        ),
+                                        lineWidth: 3
+                                    )
+                                    .shadow(color: CoreVPNTheme.brandOrange.opacity(0.6),
+                                            radius: isConnected ? 18 : 8)
                                 
-                                let buttonTitleKey: LocalizedStringKey = isConnected
-                                ? "home_button_connected"
-                                : (isConnecting ? "home_button_connecting" : "home_button_connect")
-                                
-                                Text(buttonTitleKey)
-                                    .font(.headline)
-                                    .foregroundColor(CoreVPNTheme.textPrimary)
-                                
-                                // 连接时长：始终占位，避免布局跳动；仅在已连接且有值时可见
-                                let showDuration = isConnected && !viewModel.elapsedDisplay.isEmpty
-                                let durationText = showDuration ? viewModel.elapsedDisplay : "00:00"
-                                
-                                Text(durationText)
-                                    .font(.subheadline.monospacedDigit())
-                                    .foregroundColor(CoreVPNTheme.brandOrange)
-                                    .opacity(showDuration ? 1 : 0)
+                                VStack(spacing: 6) {
+                                    Image(systemName: isConnected ? "lock.shield.fill" : "power")
+                                        .font(.system(size: 32, weight: .semibold))
+                                        .foregroundColor(isConnected ? CoreVPNTheme.successGreen : CoreVPNTheme.brandOrange)
+                                    
+                                    let buttonTitleKey: LocalizedStringKey = isConnected
+                                    ? "home_button_connected"
+                                    : (isConnecting ? "home_button_connecting" : "home_button_connect")
+                                    
+                                    Text(buttonTitleKey)
+                                        .font(.headline)
+                                        .foregroundColor(CoreVPNTheme.textPrimary)
+                                    
+                                    // 连接时长：始终占位，避免布局跳动；仅在已连接且有值时可见
+                                    let showDuration = isConnected && !viewModel.elapsedDisplay.isEmpty
+                                    let durationText = showDuration ? viewModel.elapsedDisplay : "00:00"
+                                    
+                                    Text(durationText)
+                                        .font(.subheadline.monospacedDigit())
+                                        .foregroundColor(CoreVPNTheme.brandOrange)
+                                        .opacity(showDuration ? 1 : 0)
+                                }
                             }
                         }
+                        .frame(width: 220, height: 220)
+                        .disabled(!viewModel.canInteract)
+                        .opacity(viewModel.canInteract ? 1.0 : 0.6)
+                        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isConnected)
+                        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isConnecting)
                     }
-                    .frame(width: 220, height: 220)
-                    .disabled(!viewModel.canInteract)
-                    .opacity(viewModel.canInteract ? 1.0 : 0.6)
-                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isConnected)
-                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isConnecting)
                 }
                 
                 // 状态文本
@@ -209,6 +225,49 @@ struct StatCardView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(CoreVPNTheme.cardBackground)
         )
+    }
+}
+
+// MARK: - 背景：深色渐变 + 暗角 + 环形线条
+
+private struct HomeBackgroundView: View {
+    var body: some View {
+        ZStack {
+            // 基础深色渐变
+            LinearGradient(
+                colors: [
+                    Color(red: 6/255, green: 7/255, blue: 14/255),   // 顶部略冷
+                    Color(red: 8/255, green: 5/255, blue: 12/255)    // 底部略暖
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            
+            // 中心柔和光晕，让按钮区域稍微亮一点
+            RadialGradient(
+                gradient: Gradient(colors: [
+                    Color.white.opacity(0.10),
+                    Color.clear
+                ]),
+                center: .center,
+                startRadius: 0,
+                endRadius: 260
+            )
+            .blendMode(.screen)
+            
+            // 暗角 vignette：四周略暗，中心更聚焦
+            RadialGradient(
+                gradient: Gradient(colors: [
+                    Color.black.opacity(0.0),
+                    Color.black.opacity(0.65)
+                ]),
+                center: .center,
+                startRadius: 320,
+                endRadius: 800
+            )
+            .allowsHitTesting(false)
+        }
+        .ignoresSafeArea()
     }
 }
 

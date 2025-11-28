@@ -19,9 +19,16 @@
 "home_footer_tip" = "使用蜂窝数据时可能产生额外流量费用";
 
 "nodes_title" = "选择节点";
+"nodes_auto_tag" = "智能推荐";
+"nodes_recommended" = "推荐";
+"nodes_load" = "负载：";
 
 "settings_section_general" = "通用设置";
+"settings_about_description" = "安全稳定的日常 VPN 连接服务。";
+"settings_section_help" = "帮助与支持";
+"settings_help_center" = "帮助与常见问题";
 "settings_section_about" = "关于";
+"settings_about_entry" = "关于 Super V2ray Tunnel";
 "settings_auto_connect_on_launch" = "开机自动连接";
 "settings_auto_connect_on_wifi" = "Wi‑Fi 下自动连接";
 "settings_version" = "版本号";
@@ -33,8 +40,82 @@
 
 "settings_language" = "语言";
 "settings_language_subtitle" = "应用界面语言";
+"settings_language_loading" = "正在切换语言…";
 "settings_remember_last_node" = "记住上次节点";
 
 "settings_section_legal" = "法律";
 "settings_privacy_policy" = "隐私政策";
 "settings_terms_of_service" = "服务条款";
+"tab_speedtest" = "体检";
+"speedtest_title" = "网络体检";
+"speedtest_subtitle" = "检测当前网络质量，用于优化你的上网体验";
+"speedtest_phase_idle" = "准备就绪";
+"speedtest_phase_ping" = "正在检测延迟…";
+"speedtest_phase_download" = "正在检测下载速度…";
+"speedtest_phase_evaluating" = "正在评估网络质量…";
+"speedtest_phase_finished" = "检测完成";
+
+"speedtest_ready_hint" = "点击下方按钮开始一次完整的网络体检。";
+"speedtest_button_start" = "开始体检";
+"speedtest_button_running" = "正在体检…";
+ "speedtest_button_retry" = "重新测试";
+
+"speedtest_result_title" = "体检结果";
+"speedtest_result_poor" = "当前网络较差，建议更换网络环境或稍后再试。";
+"speedtest_result_ok" = "当前网络一般，可以满足日常浏览使用。";
+"speedtest_result_good" = "当前网络状况良好，适合流媒体与游戏等场景。";
+
+"speedtest_latency" = "延迟";
+"speedtest_download" = "下载";
+"speedtest_upload" = "上传";
+"speedtest_score_format" = "综合评分：";
+"speedtest_empty_title" = "开始网络体检";
+"speedtest_empty_subtitle" = "了解当前网络质量，优化连接体验";
+"speedtest_button_connect" = "去连接";
+"speedtest_suggestion_latency" = "检测到延迟较高，建议选择距离更近的节点以获得更好性能。";
+"speedtest_suggestion_download" = "下载速度较慢，建议检查网络连接或尝试切换网络。";
+"speedtest_suggestion_score" = "网络质量一般，建议切换节点或稍后再试。";
+
+"splash_title" = "Super V2ray Tunnel";
+"splash_subtitle" = "为你的日常上网提供安全稳定的连接。";
+"splash_loading" = "正在准备安全环境…";
+
+"privacy_consent_title" = "隐私保护与数据使用说明";
+"privacy_consent_preamble" = "为了向你提供稳定、流畅的 VPN 使用体验，我们只会收集维持服务运行所需的最少信息，主要包括以下几类：";
+
+"privacy_consent_info_title" = "设备相关信息：";
+"privacy_consent_info_body" = "处理设备的基础信息，例如系统版本、硬件型号、界面语言等。这些信息有助于我们针对不同设备进行性能优化，从而提升整体连接质量。";
+
+"privacy_consent_records_title" = "连接行为统计：";
+"privacy_consent_records_body" = "我们会以汇总、去标识化的方式分析连接行为数据。通过这些统计，可以评估服务在不同网络环境下的表现，并持续改进连接的稳定性和可靠性。";
+
+"privacy_consent_duration_title" = "使用时长与带宽数据：";
+"privacy_consent_duration_body" = "我们可能会统计会话时长和整体带宽使用量，用于容量规划和资源分配，确保服务在高负载下仍能保持正常运行。";
+
+"privacy_consent_ads_title" = "广告服务数据：";
+"privacy_consent_ads_body" = "部分第三方广告服务可能会按照其各自的隐私政策收集和处理相关数据，其数据处理行为由对应服务提供方负责。";
+
+"privacy_consent_footer" = "如需了解更完整的说明，请查阅我们的《隐私政策》。";
+"privacy_consent_policy_link" = "查看隐私政策";
+"privacy_consent_agree_statement" = "继续使用即表示你已阅读并同意上述说明。";
+"privacy_consent_button_accept" = "同意并继续";
+"privacy_consent_button_decline" = "暂不使用并退出";
+
+"help_title" = "帮助与常见问题";
+"help_q1_title" = "为什么无法连接？";
+"help_q1_body" = "请先确认当前网络可用，尝试在 Wi‑Fi 与蜂窝网络之间切换，或更换一个节点后再重新连接。";
+"help_q2_title" = "网速很慢怎么办？";
+"help_q2_body" = "速度可能受本地网络、与节点的距离或高峰时段拥塞影响。建议优先选择距离较近的地区节点，并避免同时进行大文件下载。";
+"help_q3_title" = "你们会记录我的数据吗？";
+"help_q3_body" = "连接相关统计会以汇总、去标识化的方式进行分析，仅用于保障服务稳定和优化性能，不会用于识别单个用户。";
+"help_q4_title" = "重装 App 后如何恢复使用？";
+"help_q4_body" = "重装后首次打开 App 时，请重新授予 VPN 权限，然后选择节点并点击连接即可。";
+
+"about_title" = "关于";
+"about_tagline" = "一款专注稳定与安全的轻量 VPN。";
+"about_version_prefix" = "应用版本";
+"about_made_by" = "为日常使用而设计，兼顾隐私保护与简单易用。";
+"about_website_button" = "打开官网";
+"about_feature_security" = "不记录浏览内容，只专注于提供安全加密通道。";
+"about_feature_nodes" = "提供多个地区节点，方便适配不同网络环境。";
+"about_feature_healthcheck" = "内置网络体检，帮助你了解当前网络质量。";

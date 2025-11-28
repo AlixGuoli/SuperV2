@@ -5,7 +5,7 @@ struct NodeListView: View {
     
     var body: some View {
         ZStack {
-            CoreVPNTheme.background.ignoresSafeArea()
+            CoreVPNPlainBackgroundView()
             
             VStack(alignment: .leading, spacing: 16) {
                 Text("nodes_title")
@@ -38,58 +38,83 @@ struct NodeListView: View {
     }
 }
 
-struct VPNNodeItem: Identifiable {
-    let id: Int
-    let name: String
-    let ping: Int
-    let isVip: Bool
-}
-
 /// 节点卡片样式
 private struct NodeCardView: View {
     let node: VPNNodeItem
     let isSelected: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
+        VStack(alignment: .leading, spacing: 10) {
+            // 顶部：节点名称 + 选中状态
+            HStack(spacing: 8) {
                 Text(node.name)
                     .font(.headline)
                     .foregroundColor(CoreVPNTheme.textPrimary)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                
                 Spacer()
+                
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(CoreVPNTheme.brandOrange)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 18, weight: .semibold))
                 }
             }
             
+            // 中部：标签行（地区代码 / 推荐）
             HStack(spacing: 6) {
-                if node.id == 0 {
-                    // 默认自动节点标签
-                    Text("AUTO")
+                // 地区代码标签
+                Text(node.regionCode)
+                    .font(.caption2.bold())
+                    .foregroundColor(CoreVPNTheme.brandOrange)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(
+                        Capsule().fill(CoreVPNTheme.brandOrange.opacity(0.15))
+                    )
+                
+                // 推荐标签（Auto 固定显示，其他节点根据 isRecommended）
+                if node.id == 0 || node.isRecommended {
+                    Text("nodes_recommended")
                         .font(.caption2.bold())
                         .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
+                        .padding(.vertical, 3)
                         .background(
-                            Capsule().fill(CoreVPNTheme.brandOrange.opacity(0.15))
+                            Capsule().fill(CoreVPNTheme.successGreen.opacity(0.15))
                         )
-                        .foregroundColor(CoreVPNTheme.brandOrange)
+                        .foregroundColor(CoreVPNTheme.successGreen)
+                }
+            }
+            
+            // 底部：延迟 + 负载指示器
+            HStack(spacing: 12) {
+                if node.ping > 0 {
+                    // 延迟信息
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(colorForPing(node.ping))
+                            .frame(width: 6, height: 6)
+                        Text("\(node.ping) ms")
+                            .font(.caption)
+                            .foregroundColor(CoreVPNTheme.textSecondary)
+                    }
                 }
                 
-                if node.ping > 0 {
-                    // 用颜色点+ping值表现线路质量
-                    Circle()
-                        .fill(colorForPing(node.ping))
-                        .frame(width: 6, height: 6)
-                    Text("\(node.ping) ms")
-                        .font(.caption2)
-                        .foregroundColor(CoreVPNTheme.textSecondary)
+                if node.id != 0 {
+                    // 负载指示器
+                    HStack(spacing: 4) {
+                        Text("nodes_load")
+                            .font(.caption)
+                            .foregroundColor(CoreVPNTheme.textSecondary)
+                        Text("\(node.loadLevel)%")
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(colorForLoad(node.loadLevel))
+                    }
                 }
             }
         }
-        .padding(12)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -110,6 +135,18 @@ private struct NodeCardView: View {
         case ..<60:
             return CoreVPNTheme.successGreen
         case 60..<140:
+            return CoreVPNTheme.brandOrange
+        default:
+            return Color.red.opacity(0.8)
+        }
+    }
+    
+    /// 根据负载等级返回颜色：绿（低负载）/ 黄（中负载）/ 红（高负载）
+    private func colorForLoad(_ load: Int) -> Color {
+        switch load {
+        case ..<30:
+            return CoreVPNTheme.successGreen
+        case 30..<70:
             return CoreVPNTheme.brandOrange
         default:
             return Color.red.opacity(0.8)

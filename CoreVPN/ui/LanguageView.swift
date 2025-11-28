@@ -14,6 +14,8 @@ private struct AppLanguageOption: Identifiable {
 
 struct LanguageView: View {
     @EnvironmentObject private var appLanguage: AppLanguage
+    @State private var isSwitching: Bool = false
+    @State private var pendingCode: String?
     
     // 目前只放 EN / ZH，占位，后续你可以在这里加更多语言
     private let options: [AppLanguageOption] = [
@@ -29,7 +31,7 @@ struct LanguageView: View {
     
     var body: some View {
         ZStack {
-            CoreVPNTheme.background.ignoresSafeArea()
+            CoreVPNPlainBackgroundView()
             
             ScrollView {
                 VStack(spacing: 12) {
@@ -39,12 +41,44 @@ struct LanguageView: View {
                             isSelected: option.id == currentCode
                         )
                         .onTapGesture {
-                            appLanguage.setLanguage(code: option.id)
+                            guard !isSwitching, option.id != currentCode else { return }
+                            // 先显示一个轻量 loading，再稍微延迟切换语言，避免界面瞬间闪变
+                            pendingCode = option.id
+                            isSwitching = true
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                if let code = pendingCode {
+                                    appLanguage.setLanguage(code: code)
+                                }
+                                // 再延迟一点点让用户看到 loading 过渡
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    isSwitching = false
+                                    pendingCode = nil
+                                }
+                            }
                         }
                     }
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
+            }
+            
+            if isSwitching {
+                Color.black.opacity(0.25)
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 8) {
+                    ProgressView()
+                        .tint(CoreVPNTheme.brandOrange)
+                    Text("settings_language_loading")
+                        .font(.caption)
+                        .foregroundColor(CoreVPNTheme.textSecondary)
+                }
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(CoreVPNTheme.cardBackground)
+                )
             }
         }
         .navigationTitle(Text("settings_language"))
