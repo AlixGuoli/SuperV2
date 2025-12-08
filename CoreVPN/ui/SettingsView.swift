@@ -94,8 +94,8 @@ struct SettingsView: View {
                     trailing: {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(CoreVPNTheme.textSecondary)
-                    }
+                    .foregroundColor(CoreVPNTheme.textSecondary)
+            }
                 )
             }
             .buttonStyle(.plain)
@@ -124,7 +124,7 @@ struct SettingsView: View {
                     trailing: {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(CoreVPNTheme.textSecondary)
+                    .foregroundColor(CoreVPNTheme.textSecondary)
                     }
                 )
             }
@@ -222,14 +222,14 @@ private struct SettingsRow<Trailing: View>: View {
                         .frame(width: 20, height: 20)
                 }
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(LocalizedStringKey(titleKey))
-                        .font(.subheadline)
-                        .foregroundColor(CoreVPNTheme.textPrimary)
-                    if let subtitleKey = subtitleKey {
-                        Text(LocalizedStringKey(subtitleKey))
-                            .font(.caption)
-                            .foregroundColor(CoreVPNTheme.textSecondary)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(LocalizedStringKey(titleKey))
+                    .font(.subheadline)
+                    .foregroundColor(CoreVPNTheme.textPrimary)
+                if let subtitleKey = subtitleKey {
+                    Text(LocalizedStringKey(subtitleKey))
+                        .font(.caption)
+                        .foregroundColor(CoreVPNTheme.textSecondary)
                     }
                 }
             }

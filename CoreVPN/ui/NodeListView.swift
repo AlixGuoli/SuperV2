@@ -85,17 +85,17 @@ private struct NodeCardView: View {
                         )
                         .foregroundColor(CoreVPNTheme.successGreen)
                 }
-            }
-            
+                }
+                
             // 底部：延迟 + 负载指示器
             HStack(spacing: 12) {
                 if node.ping > 0 {
                     // 延迟信息
                     HStack(spacing: 4) {
-                        Circle()
-                            .fill(colorForPing(node.ping))
-                            .frame(width: 6, height: 6)
-                        Text("\(node.ping) ms")
+                    Circle()
+                        .fill(colorForPing(node.ping))
+                        .frame(width: 6, height: 6)
+                    Text("\(node.ping) ms")
                             .font(.caption)
                             .foregroundColor(CoreVPNTheme.textSecondary)
                     }
@@ -106,7 +106,7 @@ private struct NodeCardView: View {
                     HStack(spacing: 4) {
                         Text("nodes_load")
                             .font(.caption)
-                            .foregroundColor(CoreVPNTheme.textSecondary)
+                        .foregroundColor(CoreVPNTheme.textSecondary)
                         Text("\(node.loadLevel)%")
                             .font(.caption.monospacedDigit())
                             .foregroundColor(colorForLoad(node.loadLevel))
