@@ -194,10 +194,8 @@ final class EventReporter {
     
     /// 获取当前连接的IP
     private func getCurrentIP() -> String {
-        // 检查连接状态：通过 TunnelService 检查系统连接状态
-        let isConnected = TunnelService.shared().tunnelProvider.connection.status == .connected
-        
-        if isConnected {
+        // 检查连接状态：使用全局状态
+        if AppGlobalStatus.shared.connectStatus == .connected {
             let ip = ServiceConfigStore.shared.ipService
             return (ip?.isEmpty == false) ? ip! : "0.0.0.0"
         } else {

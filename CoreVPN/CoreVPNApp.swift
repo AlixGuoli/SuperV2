@@ -10,6 +10,8 @@ import UIKit
 
 @main
 struct CoreVPNApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     @StateObject private var appLanguage = AppLanguage()
     @StateObject private var nodeStore = NodeSelectionStore()
     @StateObject private var tabSelection = TabSelection()

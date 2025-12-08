@@ -14,7 +14,12 @@ class TunnelStateManager: ObservableObject {
     
     private let tunnelService = TunnelService.shared()
     
-    @Published var connectionStatus: TunnelState = .disconnected
+    @Published var connectionStatus: TunnelState = .disconnected {
+        didSet {
+            // 同步到全局状态
+            AppGlobalStatus.shared.connectStatus = connectionStatus
+        }
+    }
     @Published var showDisconnectConfirm: Bool = false
     @Published var connectedSince: Date?        // 开始连接时间
     @Published var elapsedDisplay: String = ""  // 展示用的连接时长文本
@@ -54,6 +59,9 @@ class TunnelStateManager: ObservableObject {
         
         // 恢复状态（加载配置并同步UI）
         recoverTunnelState()
+        
+        // 初始化时同步一次全局状态
+        AppGlobalStatus.shared.connectStatus = connectionStatus
     }
     
     /// 恢复连接状态（app启动时调用）- 只读取已有配置，不创建
@@ -177,17 +185,17 @@ class TunnelStateManager: ObservableObject {
             let isSuccess = await pingCheck()
             
             DispatchQueue.main.async {
-                if isSuccess {
-                    if self.connectedSince == nil {
-                        let now = Date()
-                        self.connectedSince = now
-                        UserDefaults.standard.set(
-                            now.timeIntervalSince1970,
-                            forKey: self.connectionTimestampKey
-                        )
-                    }
-                    self.startTimerIfNeeded()
-                    self.connectionStatus = .connected
+            if isSuccess {
+                if self.connectedSince == nil {
+                    let now = Date()
+                    self.connectedSince = now
+                    UserDefaults.standard.set(
+                        now.timeIntervalSince1970,
+                        forKey: self.connectionTimestampKey
+                    )
+                }
+                self.startTimerIfNeeded()
+                self.connectionStatus = .connected
                     
                     // 连接成功：保存配置到 UserDefaults（如果来自接口请求）
                     let store = ServiceConfigStore.shared
@@ -204,14 +212,14 @@ class TunnelStateManager: ObservableObject {
                         ip: store.ipService,
                         sid: self.connectionId
                     )
-                } else {
-                    debugPrint("TunnelStateManager: 连接后验证失败，主动断开")
-                    self.tunnelService.stopConnection()
-                    self.connectionStatus = .failed
-                    self.connectedSince = nil
-                    self.elapsedDisplay = ""
-                    UserDefaults.standard.removeObject(forKey: self.connectionTimestampKey)
-                    self.stopTimer()
+            } else {
+                debugPrint("TunnelStateManager: 连接后验证失败，主动断开")
+                self.tunnelService.stopConnection()
+                self.connectionStatus = .failed
+                self.connectedSince = nil
+                self.elapsedDisplay = ""
+                UserDefaults.standard.removeObject(forKey: self.connectionTimestampKey)
+                self.stopTimer()
                     
                     // 上报连接失败事件
                     let store = ServiceConfigStore.shared
@@ -220,8 +228,8 @@ class TunnelStateManager: ObservableObject {
                         ip: store.ipService,
                         sid: self.connectionId
                     )
-                }
-                self.userTriggered = false
+            }
+            self.userTriggered = false
             }
         }
     }
@@ -258,29 +266,29 @@ class TunnelStateManager: ObservableObject {
             
             // 配置获取完成后，继续连接流程
             self.tunnelService.loadFromPreferences { [weak self] error in
-                guard let self = self else { return }
+            guard let self = self else { return }
+            if let error = error {
+                debugPrint("TunnelStateManager: 加载配置失败 - \(error)")
+                self.connectionStatus = .failed
+                self.userTriggered = false
+                return
+            }
+            
+            self.tunnelService.enableAndConfigure { error in
                 if let error = error {
-                    debugPrint("TunnelStateManager: 加载配置失败 - \(error)")
+                    debugPrint("TunnelStateManager: 配置失败 - \(error)")
                     self.connectionStatus = .failed
                     self.userTriggered = false
                     return
                 }
                 
-                self.tunnelService.enableAndConfigure { error in
+                self.tunnelService.startConnection { error in
                     if let error = error {
-                        debugPrint("TunnelStateManager: 配置失败 - \(error)")
+                        debugPrint("TunnelStateManager: 启动连接失败 - \(error)")
                         self.connectionStatus = .failed
                         self.userTriggered = false
-                        return
                     }
-                    
-                    self.tunnelService.startConnection { error in
-                        if let error = error {
-                            debugPrint("TunnelStateManager: 启动连接失败 - \(error)")
-                            self.connectionStatus = .failed
-                            self.userTriggered = false
-                        }
-                        // 成功启动后，等待系统状态变化通知（会触发 updateViewFromSystemState）
+                    // 成功启动后，等待系统状态变化通知（会触发 updateViewFromSystemState）
                     }
                 }
             }

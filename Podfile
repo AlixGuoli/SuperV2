@@ -8,4 +8,9 @@ target 'CoreVPN' do
   # Pods for CoreVPN
   pod 'Alamofire'
 
+  pod 'Google-Mobile-Ads-SDK'
+  
+  pod 'YandexMobileAds', '7.18.0'
+  pod 'YandexMobileAdsInstream', '0.62.0'
+  
 end
