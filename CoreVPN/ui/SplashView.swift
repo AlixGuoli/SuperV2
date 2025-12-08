@@ -1,4 +1,5 @@
 import SwiftUI
+import Alamofire
 
 struct SplashView: View {
     let onFinish: () -> Void
@@ -63,7 +64,8 @@ struct SplashView: View {
             }
         }
         .onAppear {
-            NetworkStatusChecker.shared.checkOnLaunch()
+            // 有网络则拉取基础配置与广告配置
+            checkNetAndInitialize()
             withAnimation(.linear(duration: 3.0)) {
                 progress = 1.0
             }
@@ -71,6 +73,25 @@ struct SplashView: View {
                 onFinish()
             }
         }
+    }
+
+    /// 检查网络并在有网时请求基础配置和广告配置
+    private func checkNetAndInitialize() {
+        let reachability = NetworkReachabilityManager()
+        reachability?.startListening(onUpdatePerforming: { status in
+            switch status {
+            case .reachable(.ethernetOrWiFi), .reachable(.cellular):
+                AppConfigService.shared.fetchBaseConfig { _ in
+                    AdsService.shared.fetchAdsConfig { _ in }
+                }
+                reachability?.stopListening()
+            case .notReachable:
+                debugPrint("[Splash] 无网络，跳过配置请求")
+                reachability?.stopListening()
+            case .unknown:
+                break
+            }
+        })
     }
 }
 

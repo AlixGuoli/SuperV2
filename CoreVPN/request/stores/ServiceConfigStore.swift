@@ -20,6 +20,17 @@ final class ServiceConfigStore {
         static let saveDate = "ServiceConfigStore.SaveDate"
     }
     
+    // MARK: - 内存状态（不持久化）
+    
+    /// 当前服务配置（加密字符串，内存中）
+    var nowServiceCF: String? = nil
+    
+    /// 解析出的 IP 地址（内存中）
+    var ipService: String? = nil
+    
+    /// 配置来源标识（true=接口请求，false=UserDefaults）
+    var isFromRequest: Bool = true
+    
     // MARK: - Public: 保存与读取
     
     /// 保存服务配置（加密字符串）
@@ -29,6 +40,10 @@ final class ServiceConfigStore {
             return
         }
         
+        // 保存到内存
+        nowServiceCF = config
+        
+        // 保存到 UserDefaults
         UserDefaults.standard.set(config, forKey: Keys.serviceConfig)
         
         // 保存保存时间
@@ -59,7 +74,44 @@ final class ServiceConfigStore {
         UserDefaults.standard.removeObject(forKey: Keys.serviceConfig)
         UserDefaults.standard.removeObject(forKey: Keys.saveDate)
         UserDefaults.standard.synchronize()
+        // 清除内存状态
+        nowServiceCF = nil
+        ipService = nil
+        isFromRequest = true
         debugPrint("[Request] 已清除保存的服务配置（测试用）")
     }
+    
+    // MARK: - 配置解析
+    
+    /// 解析网络配置，提取 IP 地址
+    /// - Parameters:
+    ///   - input: 解密后的 JSON 字符串
+    ///   - isValid: 是否来自接口请求（true=接口请求，false=UserDefaults）
+    func scanCfg(input: String?, isValid: Bool) {
+        guard let data = input?.data(using: .utf8) else {
+            debugPrint("[Request] 解析网络配置失败：输入数据为空")
+            return
+        }
+        
+        do {
+            let obj = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
+            let bds = obj?["outbounds"] as? [[String: Any]]
+            
+            bds?.forEach { bd in
+                let cfg = bd["settings"] as? [String: Any]
+                let nds = cfg?["vnext"] as? [[String: Any]]
+                
+                nds?.forEach { nd in
+                    if let ipVal = nd["address"] as? String {
+                        let ipOut = isValid ? ipVal : "f\(ipVal)"
+                        self.ipService = ipOut
+                        debugPrint("[Request] 解析网络配置成功，提取 IP：\(ipOut)，来源：\(isValid ? "接口请求" : "UserDefaults")")
+                    }
+                }
+            }
+        } catch {
+            debugPrint("[Request] 解析网络配置失败：\(error.localizedDescription)")
+        }
+    }
+    
 }
-

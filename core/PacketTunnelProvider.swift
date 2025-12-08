@@ -10,17 +10,28 @@ import OSLog
 
 class PacketTunnelProvider: NEPacketTunnelProvider {
     
-    private var tunnelCore: TunnelCore? = nil
-
+    //private var tunnelCore: TunnelCore? = nil
+    
+    private var netManager: TunnelConnectionHandler? = nil
+    
     override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
         os_log("[PacketTunnelProvider] Starting tunnel", log: OSLog.default, type: .error)
-        startTunnelCore()
+        //startTunnelCore()
+        if !validateConnectionTimeframe() {
+            let error = NSError(domain: "com.CatVPN.CatVPN", code: 1, userInfo: ["timeout": "timeout error"])
+            self.cancelTunnelWithError(error)
+            logOS("validateConnectionTimeframe false")
+            return
+        }
+        logOS("validateConnectionTimeframe true")
+        connect()
         completionHandler(nil)
     }
     
     override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
         os_log("[PacketTunnelProvider] Stopping tunnel, reason: %d", log: OSLog.default, type: .error, reason.rawValue)
-        tunnelCore?.endSession()
+        //tunnelCore?.endSession()
+        netManager?.shutdownNetworkInfrastructure()
         completionHandler()
     }
     
@@ -40,13 +51,50 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         // Add code here to wake up.
     }
     
-    func startTunnelCore(){
-           if tunnelCore == nil{
-               tunnelCore  = TunnelCore(packetFlow: packetFlow)
-           }
-           tunnelCore?.configureNetwork = { [weak self] settings, completion in
-               self?.setTunnelNetworkSettings(settings, completionHandler: completion)
-           }
-           tunnelCore?.beginSession()
-       }
+    // MARK: - Nuts
+//    func startTunnelCore(){
+//        if tunnelCore == nil{
+//            tunnelCore  = TunnelCore(packetFlow: packetFlow)
+//        }
+//        tunnelCore?.configureNetwork = { [weak self] settings, completion in
+//            self?.setTunnelNetworkSettings(settings, completionHandler: completion)
+//        }
+//        tunnelCore?.beginSession()
+//    }
+    
+    // MARK: - Xray
+    func validateConnectionTimeframe() -> Bool {
+        if let userDefaults = UserDefaults(suiteName: SharedConfig.storageGroup) {
+            if let startDate = userDefaults.object(forKey: SharedConfig.timeKey) as? Date {
+                let currentDate = Date()
+                let timeInterval = currentDate.timeIntervalSince(startDate)
+                if timeInterval < 10 {
+                    logOS("PacketTunnelProvider less 10s")
+                    //os_log("PacketTunnelProvider less 10s.", log: OSLog.default, type: .error)
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    func connect() {
+        if netManager == nil {
+            netManager = TunnelConnectionHandler()
+        }
+        
+        netManager?.applyNetworkSettings = { [weak self] settings, completion in
+            self?.setTunnelNetworkSettings(settings, completionHandler: completion)
+        }
+        
+        Task {
+            do {
+                logOS("initializeNetworkTunnel")
+                try await netManager?.initializeNetworkTunnel()
+            } catch {
+                logOS("initializeNetworkTunnel error")
+            }
+        }
+    }
+    
 }

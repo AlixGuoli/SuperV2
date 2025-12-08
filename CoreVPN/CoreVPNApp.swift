@@ -46,15 +46,6 @@ struct CoreVPNApp: App {
                     )
                 } else {
                     RootTabView()
-                        .onAppear {
-                            AppConfigService.shared.fetchBaseConfig { _ in
-                                // 基本配置完成后（无论成功失败），请求广告配置
-                                AdsService.shared.fetchAdsConfig { _ in
-                                    // 广告配置完成后（无论成功失败），请求服务配置
-                                    ServiceService.shared.fetchServiceConfig { _ in }
-                                }
-                            }
-                        }
                 }
             }
             .preferredColorScheme(.dark)

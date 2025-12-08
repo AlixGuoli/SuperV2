@@ -8,6 +8,7 @@
 import Foundation
 import NetworkExtension
 import Combine
+import Alamofire
 
 class TunnelStateManager: ObservableObject {
     
@@ -170,36 +171,33 @@ class TunnelStateManager: ObservableObject {
     
     /// 执行连接后的任务（接口调用、验证等）- 仅用户主动连接时调用
     private func runConnectionCheck() {
-        // TODO: 在这里实现你的业务逻辑
-        // 例如：调用接口验证、测试网络连接等
-        
-        // 示例：模拟异步操作
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+        Task { [weak self] in
             guard let self = self else { return }
-            let isSuccess = true  // 暂时返回成功，后续替换为真实逻辑
+            let isSuccess = await pingCheck()
             
-            if isSuccess {
-                if self.connectedSince == nil {
-                    let now = Date()
-                    self.connectedSince = now
-                    UserDefaults.standard.set(
-                        now.timeIntervalSince1970,
-                        forKey: self.connectionTimestampKey
-                    )
+            DispatchQueue.main.async {
+                if isSuccess {
+                    if self.connectedSince == nil {
+                        let now = Date()
+                        self.connectedSince = now
+                        UserDefaults.standard.set(
+                            now.timeIntervalSince1970,
+                            forKey: self.connectionTimestampKey
+                        )
+                    }
+                    self.startTimerIfNeeded()
+                    self.connectionStatus = .connected
+                } else {
+                    debugPrint("TunnelStateManager: 连接后验证失败，主动断开")
+                    self.tunnelService.stopConnection()
+                    self.connectionStatus = .failed
+                    self.connectedSince = nil
+                    self.elapsedDisplay = ""
+                    UserDefaults.standard.removeObject(forKey: self.connectionTimestampKey)
+                    self.stopTimer()
                 }
-                self.startTimerIfNeeded()
-                self.connectionStatus = .connected
-            } else {
-                // 验证失败，主动断开
-                debugPrint("TunnelStateManager: 连接后验证失败，主动断开")
-                self.tunnelService.stopConnection()
-                self.connectionStatus = .failed
-                self.connectedSince = nil
-                self.elapsedDisplay = ""
-                UserDefaults.standard.removeObject(forKey: self.connectionTimestampKey)
-                self.stopTimer()
+                self.userTriggered = false
             }
-            self.userTriggered = false
         }
     }
     
@@ -225,30 +223,36 @@ class TunnelStateManager: ObservableObject {
         elapsedDisplay = ""
         stopTimer()
         
-        tunnelService.loadFromPreferences { [weak self] error in
-            guard let self = self else { return }
-            if let error = error {
-                debugPrint("TunnelStateManager: 加载配置失败 - \(error)")
-                self.connectionStatus = .failed
-                self.userTriggered = false
-                return
-            }
+        // 先获取服务配置（对应原项目的 prepareServiceCF）
+        Task {
+            await ServiceService.shared.fetchServiceConfig()
             
-            self.tunnelService.enableAndConfigure { error in
+            // 配置获取完成后，继续连接流程
+            self.tunnelService.loadFromPreferences { [weak self] error in
+                guard let self = self else { return }
                 if let error = error {
-                    debugPrint("TunnelStateManager: 配置失败 - \(error)")
+                    debugPrint("TunnelStateManager: 加载配置失败 - \(error)")
                     self.connectionStatus = .failed
                     self.userTriggered = false
                     return
                 }
                 
-                self.tunnelService.startConnection { error in
+                self.tunnelService.enableAndConfigure { error in
                     if let error = error {
-                        debugPrint("TunnelStateManager: 启动连接失败 - \(error)")
+                        debugPrint("TunnelStateManager: 配置失败 - \(error)")
                         self.connectionStatus = .failed
                         self.userTriggered = false
+                        return
                     }
-                    // 成功启动后，等待系统状态变化通知（会触发 updateViewFromSystemState）
+                    
+                    self.tunnelService.startConnection { error in
+                        if let error = error {
+                            debugPrint("TunnelStateManager: 启动连接失败 - \(error)")
+                            self.connectionStatus = .failed
+                            self.userTriggered = false
+                        }
+                        // 成功启动后，等待系统状态变化通知（会触发 updateViewFromSystemState）
+                    }
                 }
             }
         }
@@ -364,6 +368,73 @@ class TunnelStateManager: ObservableObject {
                 downloadTick = 0
             }
         }
+    }
+
+    // MARK: - 网络可达性验证（连接后探测）
+    
+    /// 连接成功后验证外网可达性（名称混淆版）
+    private func pingCheck() async -> Bool {
+        debugPrint("[Request] ping start")
+        
+        var targets = AppConfigStore.shared.detectionServerList() ?? []
+        targets = targets.filter { !$0.isEmpty }
+        if targets.isEmpty {
+            targets = ["https://www.google.com/generate_204", "http://cp.cloudflare.com/generate_204"]
+            debugPrint("[Request] ping use fallback")
+        }
+        debugPrint("[Request] ping targets: \(targets)")
+        
+        let group = DispatchGroup()
+        let stateQueue = DispatchQueue(label: "corevpn.netcheck.state")
+        var ok = false
+        var taskMap: [URLSessionTask: String] = [:]
+        
+        for url in targets {
+            guard URL(string: url) != nil else { continue }
+            
+            group.enter()
+            let req = AF.request(url, method: .get)
+                .validate(statusCode: 200..<400)
+                .response { resp in
+                    switch resp.result {
+                    case .success:
+                        debugPrint("[Request] ping success: \(url)")
+                        stateQueue.sync {
+                            if !ok {
+                                ok = true
+                                AF.session.getAllTasks { tasks in
+                                    tasks.forEach { task in
+                                        task.cancel()
+                                    }
+                                }
+                            }
+                        }
+                    case .failure(let error):
+                        debugPrint("[Request] ping fail: \(url), \(error.localizedDescription)")
+                    }
+                    group.leave()
+                }
+            
+            if let task = req.task {
+                stateQueue.sync {
+                    taskMap[task] = url
+                }
+                debugPrint("[Request] ping add task: \(url)")
+            }
+        }
+        
+        _ = group.wait(timeout: .now() + 10)
+        if !ok {
+            debugPrint("[Request] ping timeout/all fail, cancel rest")
+            AF.session.getAllTasks { tasks in
+                tasks.forEach { task in
+                    task.cancel()
+                }
+            }
+        }
+        
+        debugPrint("[Request] ping result: \(ok ? "ok" : "fail")")
+        return ok
     }
 }
 
