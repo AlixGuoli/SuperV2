@@ -61,6 +61,8 @@ final class ServiceService {
                 debugPrint("[Request] Use ServiceCF @@ request")
                 store.nowServiceCF = configString
                 store.isFromRequest = true
+                // 上报状态：接口成功
+                EventReporter.shared.sendStatus(success: true)
                 processServiceConfig(decryptedConfig, isValid: true)
                 return
             } else {
@@ -71,9 +73,12 @@ final class ServiceService {
         
         // 接口失败或解密失败，从 UserDefaults 读取
         debugPrint("[Request] Request Service config is nil, Get service config from UserDefaults")
+        store.isFromRequest = false
+        // 上报状态：接口失败（回退到 UserDefaults 或本地文件）
+        EventReporter.shared.sendStatus(success: false)
+        
         if let udConfig = store.getServiceConfig(), !udConfig.isEmpty {
             debugPrint("[Request] Use ServiceCF @@ UserDefaults")
-            store.isFromRequest = false
             
             // 解密
             if let decryptedConfig = SecureConfigDecoder.decodeConfigPayload(udConfig),

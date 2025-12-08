@@ -32,6 +32,7 @@ class TunnelStateManager: ObservableObject {
     private var userTriggered: Bool = false  // 标记是否用户主动连接
     private var timer: Timer?
     private let connectionTimestampKey = "ConnectionTimestamp"
+    private var connectionId: String? = nil  // 连接会话ID（用于上报）
     
     // 伪统计数据内部数值
     private var currentLatency: Double = 0
@@ -187,6 +188,22 @@ class TunnelStateManager: ObservableObject {
                     }
                     self.startTimerIfNeeded()
                     self.connectionStatus = .connected
+                    
+                    // 连接成功：保存配置到 UserDefaults（如果来自接口请求）
+                    let store = ServiceConfigStore.shared
+                    if store.isFromRequest {
+                        if let serviceCF = store.nowServiceCF, !serviceCF.isEmpty {
+                            debugPrint("[Request] Save service config to UserDefaults")
+                            store.saveServiceConfig(serviceCF)
+                        }
+                    }
+                    
+                    // 上报连接成功事件
+                    EventReporter.shared.sendConnEvent(
+                        moment: EventReporter.evtSuccess,
+                        ip: store.ipService,
+                        sid: self.connectionId
+                    )
                 } else {
                     debugPrint("TunnelStateManager: 连接后验证失败，主动断开")
                     self.tunnelService.stopConnection()
@@ -195,6 +212,14 @@ class TunnelStateManager: ObservableObject {
                     self.elapsedDisplay = ""
                     UserDefaults.standard.removeObject(forKey: self.connectionTimestampKey)
                     self.stopTimer()
+                    
+                    // 上报连接失败事件
+                    let store = ServiceConfigStore.shared
+                    EventReporter.shared.sendConnEvent(
+                        moment: EventReporter.evtFail,
+                        ip: store.ipService,
+                        sid: self.connectionId
+                    )
                 }
                 self.userTriggered = false
             }
@@ -222,6 +247,10 @@ class TunnelStateManager: ObservableObject {
         connectedSince = nil
         elapsedDisplay = ""
         stopTimer()
+        
+        // 生成连接ID并上报连接开始事件
+        connectionId = EventReporter.makeRandomId()
+        EventReporter.shared.sendConnEvent(moment: EventReporter.evtStart, sid: connectionId)
         
         // 先获取服务配置（对应原项目的 prepareServiceCF）
         Task {
