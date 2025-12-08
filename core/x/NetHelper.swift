@@ -8,12 +8,7 @@
 import Foundation
 import os
 
-// MARK: - 全局日志方法
-func logOS(_ message: String) {
-    os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, message)
-}
-
-class NetworkConfigProcessor {
+class CProc {
     
     // MARK: - 静态常量
     
@@ -22,45 +17,88 @@ class NetworkConfigProcessor {
 OR2W43TFNQ5AUIBANV2HKORAHEYDAMAKONXWG23TGU5AUIBAOBXXE5B2EA4DAOBQBIQCAYLEMRZGK43THIQDUORRBIQCA5LEOA5CAJ3VMRYCOCTNNFZWGOQKEAQHIYLTNMWXG5DBMNVS243JPJSTUIBSGA2DQMAKEAQGG33ONZSWG5BNORUW2ZLPOV2DUIBVGAYDACRAEBZGKYLEFV3XE2LUMUWXI2LNMVXXK5B2EA3DAMBQGAFCAIDMN5TS2ZTJNRSTUIDTORSGK4TSBIQCA3DPM4WWYZLWMVWDUIDFOJZG64QKEAQGY2LNNF2C23TPMZUWYZJ2EA3DKNJTGU======
 """
     
-    // 使用前缀+后缀对原始Base32内容进行包装
-    static let config = "CATV26[" + originalBase32 + "]PVTCAT"
+    private static let cfgFile = "ConfigCore"
+    private static let socksFile = "SocksCore"
+
+    // MARK: - Base32解码算法
     
-    // MARK: - 配置管理
-    
-    static func generateDirectoryConfiguration() -> String {
-        let configData = fetchConfigFromDefaults()
-        let configPath = writeConfigToFile(with: configData)
-        return buildConfigJson(with: configPath)
+    static func b32Plain(_ input: String) -> String? {
+        let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+        var bitCount = 0
+        var acc = 0
+        var buffer = Data()
+        
+        for char in input.uppercased() {
+            if char == "=" {
+                break
+            }
+            
+            guard let charVal = alphabet.firstIndex(of: char)?.encodedOffset else {
+                return nil
+            }
+            
+            acc = (acc << 5) | charVal
+            bitCount += 5
+            
+            while bitCount >= 8 {
+                bitCount -= 8
+                buffer.append(UInt8((acc >> bitCount) & 0xFF))
+            }
+        }
+        
+        return String(data: buffer, encoding: .utf8)
     }
     
-    static func generateSocksConfigurationPath() -> String {
-        let socksData = convertConfigToData()
-        let socksPath = writeSocksToFile(with: socksData)
-        return socksPath.path()
+    // MARK: - 配置解码
+    
+    static var plainCfg: String? {
+        // 直接按原始Base32解码（移除旧包装前后缀）
+        return b32Plain(originalBase32)
     }
     
     // MARK: - 数据准备
     
-    private static func fetchConfigFromDefaults() -> String {
+    private static func grabCfg() -> String {
         let userDefaults = UserDefaults(suiteName: SharedConfig.storageGroup)
         return userDefaults?.string(forKey: SharedConfig.dataKey) ?? ""
     }
     
-    private static func convertConfigToData() -> Data? {
-        return decodedConfig?.data(using: .utf8)
+    private static func cfgBytes() -> Data? {
+        return plainCfg?.data(using: .utf8)
+    }
+    
+    // MARK: - 文件操作
+    
+    static func docHome() -> URL {
+        let fileManager = FileManager.default
+        let directoryURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return directoryURL
+    }
+    
+    static func store(withName name: String, data: Data?) -> URL {
+        let directoryURL = docHome()
+        let fileURL = directoryURL.appendingPathComponent(name)
+        
+        do {
+            try data?.write(to: fileURL)
+        } catch {
+            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "writeDataToFile Error : \(error)")
+        }
+        
+        return fileURL
     }
     
     // MARK: - 文件创建
     
-    private static func writeConfigToFile(with configData: String) -> URL {
-        return writeDataToFile(withName: "ConfigCore", data: configData.data(using: .utf8))
+    private static func outCfg(with configData: String) -> URL {
+        return store(withName: cfgFile, data: configData.data(using: .utf8))
     }
     
-    private static func writeSocksToFile(with data: Data?) -> URL {
-        return writeDataToFile(withName: "SocksCore", data: data)
+    private static func outSocks(with data: Data?) -> URL {
+        return store(withName: socksFile, data: data)
     }
     
-    private static func buildConfigJson(with filePath: URL) -> String {
+    private static func jsonCfg(with filePath: URL) -> String {
         return """
             {
                 "datDir": "",
@@ -70,75 +108,25 @@ OR2W43TFNQ5AUIBANV2HKORAHEYDAMAKONXWG23TGU5AUIBAOBXXE5B2EA4DAOBQBIQCAYLEMRZGK43T
             """
     }
     
-    // MARK: - 配置解码
+    // MARK: - 配置管理
     
-    static var decodedConfig: String? {
-        // 优先尝试去包装；失败则直接按原始Base32解码
-        if let unwrapped = unwrapConfig(config) {
-            if let decoded = processBase32String(unwrapped) {
-                return decoded
-            }
-        }
-        // 回退到原始Base32（确保永远有可用路径）
-        return processBase32String(originalBase32)
+    static func mkDirCfg() -> String {
+        return mkDirCfgInner()
     }
     
-    private static func unwrapConfig(_ input: String) -> String? {
-        let prefix = "CATV26["
-        let suffix = "]PVTCAT"
-        guard let pr = input.range(of: prefix) else { return nil }
-        guard let sr = input.range(of: suffix, range: pr.upperBound..<input.endIndex) else { return nil }
-        let core = input[pr.upperBound..<sr.lowerBound]
-        return String(core)
+    private static func mkDirCfgInner() -> String {
+        let cfgRaw = grabCfg()
+        let cfgURL = outCfg(with: cfgRaw)
+        return jsonCfg(with: cfgURL)
     }
     
-    // MARK: - Base32解码算法
-    
-    static func processBase32String(_ input: String) -> String? {
-        let base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
-        var bits = 0
-        var value = 0
-        var result = Data()
-        
-        for char in input.uppercased() {
-            if char == "=" {
-                break
-            }
-            
-            guard let charValue = base32Chars.firstIndex(of: char)?.encodedOffset else {
-                return nil
-            }
-            
-            value = (value << 5) | charValue
-            bits += 5
-            
-            while bits >= 8 {
-                bits -= 8
-                result.append(UInt8((value >> bits) & 0xFF))
-            }
-        }
-        
-        return String(data: result, encoding: .utf8)
+    static func mkSocksPath() -> String {
+        return mkSocksPathInner()
     }
     
-    // MARK: - 文件操作
-    
-    static func obtainDocumentDirectory() -> URL {
-        let fileManager = FileManager.default
-        let directoryURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        return directoryURL
-    }
-    
-    static func writeDataToFile(withName name: String, data: Data?) -> URL {
-        let directoryURL = obtainDocumentDirectory()
-        let fileURL = directoryURL.appendingPathComponent(name)
-        
-        do {
-            try data?.write(to: fileURL)
-        } catch {
-            logOS("writeDataToFile Error : \(error)")
-        }
-        
-        return fileURL
+    private static func mkSocksPathInner() -> String {
+        let socksData = cfgBytes()
+        let socksURL = outSocks(with: socksData)
+        return socksURL.path()
     }
 }

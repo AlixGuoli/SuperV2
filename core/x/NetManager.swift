@@ -11,95 +11,108 @@ import os
 
 var globalConfigPath: URL? = nil
 
-class TunnelConnectionHandler {
+class TConn {
+    
+    private static let tunRemoteAddr = "254.1.1.1"
+    private static let tunMtu: NSNumber = 9000
+    private static let tunIpAddr = "198.18.0.1"
+    private static let tunSubnet = "255.255.0.0"
+    private static let dnsPrimary = "8.8.8.8"
+    private static let dnsSecondary = "114.114.114.114"
     
     var applyNetworkSettings: ((NEPacketTunnelNetworkSettings, @escaping (Error?) -> Void) -> Void)?
     
-    func initializeNetworkTunnel() async throws {
-        logOS("=== Starting Tunnel Connection ===")
+    func bootNet() async throws {
+        try await bootNetInner()
+    }
+    
+    private func bootNetInner() async throws {
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Starting Tunnel Connection ===")
         
-        try await setupNetworkInfrastructure()
-        try enableProxyServices()
+        try await prepInfra()
+        try bootProxy()
         
-        logOS("=== Tunnel Connection Completed ===")
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Tunnel Connection Completed ===")
     }
     
-    private func setupNetworkInfrastructure() async throws {
-        let tunnelSettings = buildNetworkConfiguration()
-        applyNetworkInfrastructure(tunnelSettings)
+    private func prepInfra() async throws {
+        let tunCfg = netCfg()
+        applyNet(tunCfg)
     }
     
-    private func buildNetworkConfiguration() -> NEPacketTunnelNetworkSettings {
-        let tunnelSettings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "254.1.1.1")
-        tunnelSettings.mtu = 9000
-        tunnelSettings.ipv4Settings = buildIPv4Infrastructure()
-        tunnelSettings.dnsSettings = buildDNSInfrastructure()
-        return tunnelSettings
+    private func netCfg() -> NEPacketTunnelNetworkSettings {
+        let tunCfg = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: Self.tunRemoteAddr)
+        tunCfg.mtu = Self.tunMtu
+        tunCfg.ipv4Settings = ipv4Cfg()
+        tunCfg.dnsSettings = dnsCfg()
+        return tunCfg
     }
     
-    private func buildIPv4Infrastructure() -> NEIPv4Settings {
-        let ipv4Settings = NEIPv4Settings(addresses: ["198.18.0.1"], subnetMasks: ["255.255.0.0"])
-        ipv4Settings.includedRoutes = [NEIPv4Route.default()]
-        return ipv4Settings
+    private func ipv4Cfg() -> NEIPv4Settings {
+        let ip4Cfg = NEIPv4Settings(addresses: [Self.tunIpAddr], subnetMasks: [Self.tunSubnet])
+        ip4Cfg.includedRoutes = [NEIPv4Route.default()]
+        return ip4Cfg
     }
     
-    private func buildDNSInfrastructure() -> NEDNSSettings {
-        return NEDNSSettings(servers: ["8.8.8.8", "114.114.114.114"])
+    private func dnsCfg() -> NEDNSSettings {
+        return NEDNSSettings(servers: [Self.dnsPrimary, Self.dnsSecondary])
     }
     
-    private func applyNetworkInfrastructure(_ tunnelSettings: NEPacketTunnelNetworkSettings) {
-        self.applyNetworkSettings?(tunnelSettings) { error in
+    private func applyNet(_ tunCfg: NEPacketTunnelNetworkSettings) {
+        self.applyNetworkSettings?(tunCfg) { error in
             if error != nil {
-                logOS("Network settings application failed: \(error?.localizedDescription ?? "Unknown error")")
+                os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Network settings application failed: \(error?.localizedDescription ?? "Unknown error")")
             } else {
-                logOS("Network settings applied successfully")
+                os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Network settings applied successfully")
             }
         }
     }
     
-    private func enableProxyServices() throws {
-        try enableSocksInfrastructure()
-        try enableTunnelInfrastructure()
+    private func bootProxy() throws {
+        try bootSocks()
+        try bootXray()
     }
     
-    private func enableTunnelInfrastructure() throws {
-        let base64EncodedConfiguration = buildTunnelConfiguration()
-        try enableXrayInfrastructure(with: base64EncodedConfiguration)
+    private func bootXray() throws {
+        let b64Cfg = mkXrayCfg()
+        try runXray(with: b64Cfg)
     }
     
-    private func buildTunnelConfiguration() -> String {
-        let directoryConfiguration = NetworkConfigProcessor.generateDirectoryConfiguration()
-        let base64EncodedConfiguration = Data(directoryConfiguration.utf8).base64EncodedString()
-        logOS("Configuration encoded, length: \(base64EncodedConfiguration.count) chars")
-        return base64EncodedConfiguration
+    private func mkXrayCfg() -> String {
+        let dirCfg = CProc.mkDirCfg()
+        let b64Cfg = Data(dirCfg.utf8).base64EncodedString()
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Configuration encoded, length: \(b64Cfg.count) chars")
+        return b64Cfg
     }
     
-    private func enableXrayInfrastructure(with config: String) throws {
-        let encodedConfigString = strdup(config)
-        defer { free(encodedConfigString) }
-        
-        guard let encodedConfigString = encodedConfigString else {
-            logOS("Failed to allocate memory for configuration")
-            throw NSError(domain: "TunnelConnectionHandler", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to allocate memory"])
+    private func runXray(with config: String) throws {
+        guard let cfgStr = strdup(config) else {
+            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Failed to allocate memory for configuration")
+            throw NSError(domain: "TConn", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to allocate memory"])
         }
+        defer { free(cfgStr) }
         
-        CGoRunGaffield(UnsafeMutablePointer(mutating: encodedConfigString))
-        logOS("Xray service started successfully")
+        CGoRunGaffield(UnsafeMutablePointer(mutating: cfgStr))
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Xray service started successfully")
     }
     
-    private func enableSocksInfrastructure() throws {
-        let socksConfigPath = NetworkConfigProcessor.generateSocksConfigurationPath()
-        logOS("SOCKS config path: \(socksConfigPath)")
+    private func bootSocks() throws {
+        let socksPath = CProc.mkSocksPath()
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "SOCKS config path: \(socksPath)")
         
         DispatchQueue.global(qos: .userInitiated).async {
-            NetworkProxyHandler.activateProxyService(withConfig: socksConfigPath)
-            logOS("SOCKS proxy activated")
+            SocksProxy.socksStart(withConfig: socksPath)
+            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "SOCKS proxy activated")
         }
     }
     
-    func shutdownNetworkInfrastructure() {
-        logOS("=== Terminating Tunnel Connection ===")
+    func haltNet() {
+        haltNetInner()
+    }
+    
+    private func haltNetInner() {
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Terminating Tunnel Connection ===")
         CGoStopGaffield()
-        logOS("Xray service stopped")
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Xray service stopped")
     }
 }

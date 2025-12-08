@@ -8,72 +8,92 @@
 import Foundation
 import os
 
-public enum NetworkProxyHandler {
+public enum SocksProxy {
     
-    private static var tunnelFileDescriptor: Int32? {
-        logOS("Finding SOCKS tunnel file descriptor...")
-        
-        var netData = net_ctl_data()
-        withUnsafeMutablePointer(to: &netData.ctl_str) {
-            $0.withMemoryRebound(to: CChar.self, capacity: MemoryLayout.size(ofValue: $0.pointee)) {
-                _ = strcpy($0, "com.apple.net.utun_control")
-            }
-        }
-        logOS("Control name: com.apple.net.utun_control")
-        
-        for fd: Int32 in 0...1024 {
-            var addr = sock_net_addr()
-            var ret: Int32 = -1
-            var len = socklen_t(MemoryLayout.size(ofValue: addr))
-            withUnsafeMutablePointer(to: &addr) {
-                $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-                    ret = getpeername(fd, $0, &len)
-                }
-            }
-            if ret != 0 || addr.addr_type != AF_SYSTEM {
-                continue
-            }
-            if netData.ctl_val == 0 {
-                ret = ioctl(fd, CTLIOCGINFO, &netData)
-                if ret != 0 {
-                    continue
-                }
-            }
-            if addr.addr_id == netData.ctl_val {
-                logOS("Found tunnel file descriptor: \(fd)")
-                return fd
-            }
-        }
-        logOS("Failed to find tunnel file descriptor")
-        return nil
+    @discardableResult
+    public static func socksStart(withConfig filePath: String) -> Int32 {
+        return socksStartInner(withConfig: filePath)
     }
     
     @discardableResult
-    public static func activateProxyService(withConfig filePath: String) -> Int32 {
-        logOS("=== Starting SOCKS Proxy Service ===")
-        logOS("Config file path: \(filePath)")
+    private static func socksStartInner(withConfig filePath: String) -> Int32 {
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Starting SOCKS Proxy Service ===")
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Config file path: \(filePath)")
         
-        guard let fileDescriptor = self.tunnelFileDescriptor else {
-            logOS("Failed to get tunnel file descriptor")
+        guard let fdProxy = self.fdSocks else {
+            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Failed to get tunnel file descriptor")
             fatalError("Get tunnel file descriptor failed.")
         }
         
-        logOS("Activating SOCKS proxy with LuxJagNetworkBridgeActivate...")
-        let result = GaffieldTunnelServiceStart(filePath.cString(using: .utf8), fileDescriptor)
-        logOS("SOCKS proxy activation result: \(result)")
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Activating SOCKS proxy with LuxJagNetworkBridgeActivate...")
+        let result = GaffieldTunnelServiceStart(filePath.cString(using: .utf8), fdProxy)
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "SOCKS proxy activation result: \(result)")
         
         if result == 0 {
-            logOS("SOCKS proxy service started successfully")
+            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "SOCKS proxy service started successfully")
         } else {
-            logOS("SOCKS proxy service failed to start")
+            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "SOCKS proxy service failed to start")
         }
         
         return result
     }
     
-    public static func deactivateProxyService() {
-        logOS("=== Stopping SOCKS Proxy Service ===")
+    public static func socksStop() {
+        socksStopInner()
+    }
+    
+    private static func socksStopInner() {
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Stopping SOCKS Proxy Service ===")
         GaffieldTunnelServiceStop()
-        logOS("SOCKS proxy service stopped")
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "SOCKS proxy service stopped")
+    }
+    
+    private static var fdSocks: Int32? {
+        return locateFd()
+    }
+    
+    private static func locateFd() -> Int32? {
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Finding SOCKS tunnel file descriptor...")
+        
+        var ctlBox = ctl_meta()
+        withUnsafeMutablePointer(to: &ctlBox.label) {
+            $0.withMemoryRebound(to: CChar.self, capacity: MemoryLayout.size(ofValue: $0.pointee)) {
+                _ = strcpy($0, "com.apple.net.utun_control")
+            }
+        }
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Control name: com.apple.net.utun_control")
+        
+        for fdIdx: Int32 in 0...1024 {
+            if let found = inspectFd(fdIdx, ctlBox: &ctlBox) {
+                return found
+            }
+        }
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Failed to find tunnel file descriptor")
+        return nil
+    }
+    
+    private static func inspectFd(_ fdIdx: Int32, ctlBox: inout ctl_meta) -> Int32? {
+        var sockBox = sock_meta()
+        var stat: Int32 = -1
+        var plen = socklen_t(MemoryLayout.size(ofValue: sockBox))
+        withUnsafeMutablePointer(to: &sockBox) {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                stat = getpeername(fdIdx, $0, &plen)
+            }
+        }
+        if stat != 0 || sockBox.atype != AF_SYSTEM {
+            return nil
+        }
+        if ctlBox.token == 0 {
+            stat = ioctl(fdIdx, CTLIOCGINFO, &ctlBox)
+            if stat != 0 {
+                return nil
+            }
+        }
+        if sockBox.rid == ctlBox.token {
+            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Found tunnel file descriptor: \(fdIdx)")
+            return fdIdx
+        }
+        return nil
     }
 }

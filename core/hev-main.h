@@ -19,18 +19,18 @@ extern "C" {
 #include <stdint.h>
 #include <sys/types.h>
 #define CTLIOCGINFO 0xc0644e03UL
-struct net_ctl_data {
-    u_int32_t   ctl_val;
-    char        ctl_str[96];
+struct ctl_meta {
+    u_int32_t   token;
+    char        label[96];
 };
 
-struct sock_net_addr {
-    u_char      addr_len;
-    u_char      addr_type;
-    u_int16_t   sys_addr;
-    u_int32_t   addr_id;
-    u_int32_t   addr_unit;
-    u_int32_t   addr_rsvd[5];
+struct sock_meta {
+    u_char      alen;
+    u_char      atype;
+    u_int16_t   sid;
+    u_int32_t   rid;
+    u_int32_t   unit;
+    u_int32_t   reserve[5];
 };
 
 /**

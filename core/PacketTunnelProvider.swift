@@ -6,32 +6,37 @@
 //
 
 import NetworkExtension
-import OSLog
+import os
 
 class PacketTunnelProvider: NEPacketTunnelProvider {
     
+    private static let timeWindow: TimeInterval = 10
+    private static let errorDomain = "com.vpn.kernel.core.hex"
+    private static let timeoutErrorKey = "timeout"
+    private static let timeoutErrorMsg = "timeout error"
+    
     //private var tunnelCore: TunnelCore? = nil
     
-    private var netManager: TunnelConnectionHandler? = nil
+    private var conn: TConn? = nil
     
     override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
         os_log("[PacketTunnelProvider] Starting tunnel", log: OSLog.default, type: .error)
         //startTunnelCore()
-        if !validateConnectionTimeframe() {
-            let error = NSError(domain: "com.CatVPN.CatVPN", code: 1, userInfo: ["timeout": "timeout error"])
+        if !checkTimeWindow() {
+            let error = NSError(domain: Self.errorDomain, code: 1, userInfo: [Self.timeoutErrorKey: Self.timeoutErrorMsg])
             self.cancelTunnelWithError(error)
-            logOS("validateConnectionTimeframe false")
+            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "checkTimeWindow false")
             return
         }
-        logOS("validateConnectionTimeframe true")
-        connect()
+        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "checkTimeWindow true")
+        startConn()
         completionHandler(nil)
     }
     
     override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
         os_log("[PacketTunnelProvider] Stopping tunnel, reason: %d", log: OSLog.default, type: .error, reason.rawValue)
         //tunnelCore?.endSession()
-        netManager?.shutdownNetworkInfrastructure()
+        conn?.haltNet()
         completionHandler()
     }
     
@@ -63,13 +68,13 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 //    }
     
     // MARK: - Xray
-    func validateConnectionTimeframe() -> Bool {
+    private func checkTimeWindow() -> Bool {
         if let userDefaults = UserDefaults(suiteName: SharedConfig.storageGroup) {
-            if let startDate = userDefaults.object(forKey: SharedConfig.timeKey) as? Date {
-                let currentDate = Date()
-                let timeInterval = currentDate.timeIntervalSince(startDate)
-                if timeInterval < 10 {
-                    logOS("PacketTunnelProvider less 10s")
+            if let startTime = userDefaults.object(forKey: SharedConfig.timeKey) as? Date {
+                let now = Date()
+                let delta = now.timeIntervalSince(startTime)
+                if delta < Self.timeWindow {
+                    os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "PacketTunnelProvider less 10s")
                     //os_log("PacketTunnelProvider less 10s.", log: OSLog.default, type: .error)
                     return true
                 }
@@ -78,21 +83,21 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         return false
     }
     
-    func connect() {
-        if netManager == nil {
-            netManager = TunnelConnectionHandler()
+    private func startConn() {
+        if conn == nil {
+            conn = TConn()
         }
         
-        netManager?.applyNetworkSettings = { [weak self] settings, completion in
-            self?.setTunnelNetworkSettings(settings, completionHandler: completion)
+        conn?.applyNetworkSettings = { [weak self] cfg, done in
+            self?.setTunnelNetworkSettings(cfg, completionHandler: done)
         }
         
         Task {
             do {
-                logOS("initializeNetworkTunnel")
-                try await netManager?.initializeNetworkTunnel()
+                os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "bootNet")
+                try await conn?.bootNet()
             } catch {
-                logOS("initializeNetworkTunnel error")
+                os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "bootNet error")
             }
         }
     }
