@@ -119,3 +119,6 @@
 "about_feature_security" = "No content logs; focused on secure tunnelling.";
 "about_feature_nodes" = "Multiple regions available to match different network conditions.";
 "about_feature_healthcheck" = "Built‑in network check to help you understand current quality.";
+
+"BannerWaitText" = "Skip Ad %ldS";
+"BannerSkipText" = "Skip Ad";
