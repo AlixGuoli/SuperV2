@@ -34,12 +34,12 @@ final class EventReporter {
     ///   - moment: 事件类型（evtStart/evtFail/evtSuccess/evtDisconnect）
     ///   - ip: IP地址（可选）
     ///   - sid: 会话ID（可选）
-    func sendConnEvent(moment: String, ip: String? = nil, sid: String? = nil) {
+    func sendConnEvent(event: String, ip: String? = nil, sid: String? = nil) {
         let time = getTimeStamp()
         let code = "\(time)-\(sid ?? "")"
         
         let msg: String
-        switch moment {
+        switch event {
         case EventReporter.evtStart:
             msg = "\(EventReporter.evtStart),\(code),0.0.0.0"
         case EventReporter.evtFail:
@@ -47,37 +47,37 @@ final class EventReporter {
         case EventReporter.evtSuccess:
             msg = "\(EventReporter.evtSuccess),0,\(code),\(ip ?? "0.0.0.0")"
         default:
-            debugPrint("[Report] [连接事件] 未知类型: \(moment)")
+            debugPrint("[Report] [连接事件] 未知类型: \(event)")
             return
         }
         
-        postLog(msg: msg, eventType: moment)
+        postLog(msg: msg, eventType: event)
     }
     
     // MARK: - 广告事件上报
     
     /// 上报广告事件
     /// - Parameters:
-    ///   - moment: 事件类型（evtAdStart/evtAdSuccess/evtAdShow）
+    ///   - event: 事件类型（evtAdStart/evtAdSuccess/evtAdShow）
     ///   - key: 广告Key（可选）
-    ///   - adMoment: 广告时刻（可选）
-    func sendAdEvent(moment: String, key: String? = nil, adMoment: String? = nil) {
+    ///   - eventAd: 广告时刻（可选）
+    func sendAdEvent(event: String, key: String? = nil, eventAd: String? = nil) {
         let ip = getCurrentIP()
         
         let msg: String
-        switch moment {
+        switch event {
         case EventReporter.evtAdStart:
-            msg = "\(EventReporter.evtAdStart),\(adMoment ?? ""),\(ip),ad"
+            msg = "\(EventReporter.evtAdStart),\(eventAd ?? ""),\(ip),ad"
         case EventReporter.evtAdSuccess:
-            msg = "\(EventReporter.evtAdSuccess),\(adMoment ?? ""),\(ip),ad,\(key ?? "")"
+            msg = "\(EventReporter.evtAdSuccess),\(eventAd ?? ""),\(ip),ad,\(key ?? "")"
         case EventReporter.evtAdShow:
-            msg = "\(EventReporter.evtAdShow),\(adMoment ?? ""),\(ip),ad,\(key ?? "empty")"
+            msg = "\(EventReporter.evtAdShow),\(eventAd ?? ""),\(ip),ad,\(key ?? "empty")"
         default:
-            debugPrint("[Report] [广告事件] 未知类型: \(moment)")
+            debugPrint("[Report] [广告事件] 未知类型: \(event)")
             return
         }
         
-        postLog(msg: msg, eventType: moment)
+        postLog(msg: msg, eventType: event)
     }
     
     // MARK: - 状态上报

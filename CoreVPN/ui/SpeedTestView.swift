@@ -244,6 +244,14 @@ struct SpeedTestView: View {
         }
         .onDisappear {
             invalidateTimer()
+            // 重置状态，避免切换 Tab 后仍停留在运行态导致按钮不可点击
+            status = .idle
+            progress = 0
+            latency = 0
+            download = 0
+            upload = 0
+            score = 0
+            elapsed = 0
         }
     }
     

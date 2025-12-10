@@ -30,90 +30,93 @@ struct CoreVPNApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack(path: $flowRouter.path) {
-                Group {
-                    if showSplash {
-                        SplashView(
-                            onFinish: {
-                                showSplash = false
-                                appReady = true
-                                // 启动页结束后，如果还没同意隐私，就进隐私页
-                                if !UserDefaults.standard.bool(forKey: privacyAcceptedKey) {
-                                    showPrivacy = true
+            ZStack {
+                // 仅 RootTabView 使用 NavigationStack
+                NavigationStack(path: $flowRouter.path) {
+                    RootTabView()
+                        .navigationDestination(for: FlowPage.self) { page in
+                            switch page {
+                            case .connecting:
+                                ConnectingView {
+                                    flowRouter.reset()
                                 }
-                            },
-                            onFinishWithAd: {
-                                showSplash = false
-                                appReady = true
-                                // 延迟展示广告，避免与切换动画竞争
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                    showSplashAd()
-                                }
-                                // 启动页结束后，如果还没同意隐私，就进隐私页
-                                if !UserDefaults.standard.bool(forKey: privacyAcceptedKey) {
-                                    showPrivacy = true
-                                }
-                            }
-                        )
-                    } else if showPrivacy {
-                        PrivacyConsentView(
-                            onAccept: {
-                                UserDefaults.standard.set(true, forKey: privacyAcceptedKey)
-                                showPrivacy = false
-                            },
-                            onDecline: {
-                                // 不同意，直接退出 App（iOS 常见做法）
-                                UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                    exit(0)
-                                }
-                            }
-                        )
-                    } else {
-                        ZStack {
-                            RootTabView()
-                            
-                            // 后台切前台的启动页
-                            if showReturnSplash {
-                                BackgroundSplashView {
-                                    showReturnSplash = false
-                                }
-                                .background(Color(UIColor.systemBackground).opacity(1.0))
-                                .onAppear {
-                                    debugPrint("[Ad-Background] 后台启动页显示")
-                                    // 2秒后展示广告
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                                        displayReturnAd()
-                                    }
-                                    // 3秒后自动关闭
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                                        showReturnSplash = false
-                                    }
+                            case .result(let type):
+                                ResultView(type: type) {
+                                    flowRouter.reset()
                                 }
                             }
                         }
-                    }
                 }
-                .navigationDestination(for: FlowPage.self) { page in
-                    switch page {
-                    case .connecting:
-                        ConnectingView {
-                            flowRouter.reset()
+                .environmentObject(appLanguage)
+                .environmentObject(nodeStore)
+                .environmentObject(tabSelection)
+                .environmentObject(tunnelManager)
+                .environmentObject(flowRouter)
+                .environment(\.locale, appLanguage.locale)
+                .preferredColorScheme(.dark)
+                
+                // 启动页
+                if showSplash {
+                    SplashView(
+                        onFinish: {
+                            showSplash = false
+                            appReady = true
+                            if !UserDefaults.standard.bool(forKey: privacyAcceptedKey) {
+                                showPrivacy = true
+                            }
+                        },
+                        onFinishWithAd: {
+                            showSplash = false
+                            appReady = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                showSplashAd()
+                            }
+                            if !UserDefaults.standard.bool(forKey: privacyAcceptedKey) {
+                                showPrivacy = true
+                            }
                         }
-                    case .result(let type):
-                        ResultView(type: type) {
-                            flowRouter.reset()
+                    )
+                    .background(Color(UIColor.systemBackground).opacity(1.0))
+                    .ignoresSafeArea()
+                }
+                
+                // 隐私页
+                if showPrivacy {
+                    PrivacyConsentView(
+                        onAccept: {
+                            UserDefaults.standard.set(true, forKey: privacyAcceptedKey)
+                            showPrivacy = false
+                        },
+                        onDecline: {
+                            UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                exit(0)
+                            }
+                        }
+                    )
+                    .background(Color(UIColor.systemBackground).opacity(1.0))
+                    .ignoresSafeArea()
+                }
+                
+                // 后台返回覆盖页
+                if showReturnSplash {
+                    BackgroundSplashView {
+                        showReturnSplash = false
+                    }
+                    .background(Color(UIColor.systemBackground).opacity(1.0))
+                    .ignoresSafeArea()
+                    .onAppear {
+                        debugPrint("[Ad-Background] 后台启动页显示")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            displayReturnAd()
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            showReturnSplash = false
                         }
                     }
+                    .zIndex(9999)
                 }
             }
-            .preferredColorScheme(.dark)
-            .environmentObject(appLanguage)
-            .environmentObject(nodeStore)
-            .environmentObject(tabSelection)
-            .environmentObject(tunnelManager)
-            .environmentObject(flowRouter)
-            .environment(\.locale, appLanguage.locale)
         }
         .onChange(of: scenePhase) { newPhase in
             onScenePhaseChange(newPhase)
@@ -173,10 +176,10 @@ struct CoreVPNApp: App {
         debugPrint("[Ad-Splash] 🎬 开始展示广告")
         
         if adCenter.checkBannerStatus() {
-            debugPrint("[Ad-Splash] ✅ 展示 Banner")
+            debugPrint("[Ad-Splash] ❤️ 展示 Banner")
             adCenter.showYanBannerFromRoot()
         } else if adCenter.checkIntStatus() {
-            debugPrint("[Ad-Splash] ✅ 展示 Int")
+            debugPrint("[Ad-Splash] ❤️ 展示 Int")
             adCenter.showYanIntFromRoot()
         } else {
             debugPrint("[Ad-Splash] ❌ 无可用广告")
@@ -246,15 +249,15 @@ struct CoreVPNApp: App {
     private func presentBestAd(adCenter: AdCenter) -> Bool {
         // 优先级顺序：Admob > Yandex Banner > Yandex Int
         if adCenter.checkAdmobStatus() {
-            debugPrint("[Ad-Background] ✅ 展示 Admob")
+            debugPrint("[Ad-Background] ❤️ 展示 Admob")
             adCenter.showAdmobIntFromRoot(moment: AdMoment.foreground)
             return true
         } else if adCenter.checkBannerStatus() {
-            debugPrint("[Ad-Background] ✅ 展示 Yandex Banner")
+            debugPrint("[Ad-Background] ❤️ 展示 Yandex Banner")
             adCenter.showYanBannerFromRoot()
             return true
         } else if adCenter.checkIntStatus() {
-            debugPrint("[Ad-Background] ✅ 展示 Yandex Int")
+            debugPrint("[Ad-Background] ❤️ 展示 Yandex Int")
             adCenter.showYanIntFromRoot()
             return true
         }

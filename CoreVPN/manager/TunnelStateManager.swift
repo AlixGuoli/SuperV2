@@ -156,23 +156,7 @@ class TunnelStateManager: ObservableObject {
             
         case .disconnected, .invalid:
             debugPrint("TunnelStateManager: 系统已断开")
-            connectionStatus = .disconnected
-            userTriggered = false
-            if hasEverConnected {
-                flowResult = .disconnectSuccess
-                showFlowConnecting = false
-                hasEverConnected = false
-            }
-            connectedSince = nil
-            elapsedDisplay = ""
-            UserDefaults.standard.removeObject(forKey: connectionTimestampKey)
-            fakeLatencyText = "-- ms"
-            fakeDownloadText = "0 Mbps"
-            currentLatency = 0
-            currentDownload = 0
-            targetDownload = 0
-            downloadTick = 0
-            stopTimer()
+            handleDisconnection()
             
         case .connecting:
             debugPrint("TunnelStateManager: 系统连接中")
@@ -196,58 +180,150 @@ class TunnelStateManager: ObservableObject {
             let isSuccess = await pingCheck()
             
             DispatchQueue.main.async {
-            if isSuccess {
-                if self.connectedSince == nil {
-                    let now = Date()
-                    self.connectedSince = now
-                    UserDefaults.standard.set(
-                        now.timeIntervalSince1970,
-                        forKey: self.connectionTimestampKey
-                    )
+                if isSuccess {
+                    // 更新全局连接状态（用于广告系统判断）
+                    AppGlobalStatus.shared.connectStatus = .connected
+                    
+                    // 等待广告准备完成后再更新UI
+                    self.runAdCheck()
+                } else {
+                    self.handleConnectionFailure()
                 }
-                self.startTimerIfNeeded()
-                self.connectionStatus = .connected
-                self.hasEverConnected = true
-                self.showFlowConnecting = false
-                self.flowResult = .connectSuccess
-                    
-                    // 连接成功：保存配置到 UserDefaults（如果来自接口请求）
-                    let store = ServiceConfigStore.shared
-                    if store.isFromRequest {
-                        if let serviceCF = store.nowServiceCF, !serviceCF.isEmpty {
-                            debugPrint("[Request] Save service config to UserDefaults")
-                            store.saveServiceConfig(serviceCF)
-                        }
-                    }
-                    
-                    // 上报连接成功事件
-                    EventReporter.shared.sendConnEvent(
-                        moment: EventReporter.evtSuccess,
-                        ip: store.ipService,
-                        sid: self.connectionId
-                    )
-            } else {
-                debugPrint("TunnelStateManager: 连接后验证失败，主动断开")
-                self.tunnelService.stopConnection()
-                self.connectionStatus = .failed
-                self.connectedSince = nil
-                self.elapsedDisplay = ""
-                UserDefaults.standard.removeObject(forKey: self.connectionTimestampKey)
-                self.stopTimer()
-                    
-                    // 上报连接失败事件
-                    let store = ServiceConfigStore.shared
-                    EventReporter.shared.sendConnEvent(
-                        moment: EventReporter.evtFail,
-                        ip: store.ipService,
-                        sid: self.connectionId
-                    )
-                self.showFlowConnecting = false
-                self.flowResult = .connectFail
-            }
-            self.userTriggered = false
+                self.userTriggered = false
             }
         }
+    }
+    
+    /// 执行广告检查（等待加载完成后更新UI）
+    private func runAdCheck() {
+        let beginTime = Date()
+        debugPrint("[Request] ad check start")
+        
+        var isCompleted = false
+        let maxWaitSeconds: TimeInterval = 15.0
+        
+        // 超时保护
+        let timeoutHandler = DispatchWorkItem { [weak self] in
+            guard let self = self, !isCompleted else { return }
+            isCompleted = true
+            let timeoutEnd = Date()
+            debugPrint("[Request] ad check timeout, elapsed: \(timeoutEnd.timeIntervalSince(beginTime))")
+            self.handleConnectionSuccess()
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + maxWaitSeconds, execute: timeoutHandler)
+        
+        // 请求广告
+        AdCenter.shared.loadAdmobAd(moment: AdMoment.connect) { [weak self] in
+            guard let self = self, !isCompleted else { return }
+            isCompleted = true
+            timeoutHandler.cancel()
+            let finishTime = Date()
+            debugPrint("[Request] ad check success, elapsed: \(finishTime.timeIntervalSince(beginTime))")
+            self.handleConnectionSuccess()
+        } onAdFailed: { [weak self] in
+            guard let self = self, !isCompleted else { return }
+            isCompleted = true
+            timeoutHandler.cancel()
+            let finishTime = Date()
+            debugPrint("[Request] ad check fail, elapsed: \(finishTime.timeIntervalSince(beginTime))")
+            self.handleConnectionSuccess()
+        }
+    }
+    
+    /// 连接成功后的处理（确保主线程更新）
+    private func handleConnectionSuccess() {
+        DispatchQueue.main.async {
+            // 设置连接时间
+            if self.connectedSince == nil {
+                let now = Date()
+                self.connectedSince = now
+                UserDefaults.standard.set(
+                    now.timeIntervalSince1970,
+                    forKey: self.connectionTimestampKey
+                )
+            }
+            
+            self.startTimerIfNeeded()
+            self.connectionStatus = .connected
+            self.hasEverConnected = true
+            
+            // 连接成功：保存配置到 UserDefaults（如果来自接口请求）
+            let store = ServiceConfigStore.shared
+            if store.isFromRequest {
+                if let serviceCF = store.nowServiceCF, !serviceCF.isEmpty {
+                    debugPrint("[Request] Save service config to UserDefaults")
+                    store.saveServiceConfig(serviceCF)
+                }
+            }
+            
+            // 上报连接成功事件
+            EventReporter.shared.sendConnEvent(
+                event: EventReporter.evtSuccess,
+                ip: store.ipService,
+                sid: self.connectionId
+            )
+            
+            // 显示结果页
+            self.showFlowConnecting = false
+            self.flowResult = .connectSuccess
+        }
+    }
+    
+    /// 连接失败后的处理
+    private func handleConnectionFailure() {
+        debugPrint("TunnelStateManager: 连接后验证失败，主动断开")
+        
+        DispatchQueue.main.async {
+            self.tunnelService.stopConnection()
+            self.connectionStatus = .failed
+            self.connectedSince = nil
+            self.elapsedDisplay = ""
+            UserDefaults.standard.removeObject(forKey: self.connectionTimestampKey)
+            self.stopTimer()
+            
+            // 上报连接失败事件
+            let store = ServiceConfigStore.shared
+            EventReporter.shared.sendConnEvent(
+                event: EventReporter.evtFail,
+                ip: store.ipService,
+                sid: self.connectionId
+            )
+            
+            // 显示结果页
+            self.showFlowConnecting = false
+            self.flowResult = .connectFail
+        }
+    }
+    
+    /// 断开连接后的处理
+    private func handleDisconnection() {
+        connectionStatus = .disconnected
+        userTriggered = false
+        
+        // 如果 hasEverConnected == false，说明已经在 shutdownConnection() 中处理过结果页了
+        // 这里只处理状态清理，不再设置结果页
+        if hasEverConnected {
+            // 这种情况是系统自动断开（非用户主动），显示断开成功结果页
+            flowResult = .disconnectSuccess
+            showFlowConnecting = false
+            hasEverConnected = false
+        }
+        
+        // 清理连接相关状态
+        connectedSince = nil
+        elapsedDisplay = ""
+        UserDefaults.standard.removeObject(forKey: connectionTimestampKey)
+        
+        // 重置统计数据
+        fakeLatencyText = "-- ms"
+        fakeDownloadText = "0 Mbps"
+        currentLatency = 0
+        currentDownload = 0
+        targetDownload = 0
+        downloadTick = 0
+        
+        stopTimer()
     }
     
     /// 切换连接状态
@@ -275,7 +351,7 @@ class TunnelStateManager: ObservableObject {
         
         // 生成连接ID并上报连接开始事件
         connectionId = EventReporter.makeRandomId()
-        EventReporter.shared.sendConnEvent(moment: EventReporter.evtStart, sid: connectionId)
+        EventReporter.shared.sendConnEvent(event: EventReporter.evtStart, sid: connectionId)
         
         // 先获取服务配置（对应原项目的 prepareServiceCF）
         Task {
@@ -316,10 +392,30 @@ class TunnelStateManager: ObservableObject {
     func shutdownConnection() {
         showDisconnectConfirm = false
         userTriggered = false
-        connectionStatus = .connecting
         
-        tunnelService.stopConnection()
-        // 等待系统状态变化通知来更新UI（会触发 updateViewFromSystemState）
+        // 如果之前连接过，先显示结果页
+        if hasEverConnected {
+            flowResult = .disconnectSuccess
+            showFlowConnecting = false
+            hasEverConnected = false  // 清除标志，避免 handleDisconnection() 重复设置
+            
+            // 检查是否有广告可用
+            if AdCenter.shared.checkOverallAvailability() {
+                debugPrint("[Request] 断开连接：有广告可用，延迟3秒后断开")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    self.connectionStatus = .connecting
+                    self.tunnelService.stopConnection()
+                }
+            } else {
+                debugPrint("[Request] 断开连接：无广告可用，立即断开")
+                connectionStatus = .connecting
+                tunnelService.stopConnection()
+            }
+        } else {
+            // 没有连接过，直接断开
+            connectionStatus = .connecting
+            tunnelService.stopConnection()
+        }
     }
     
     /// 取消断开

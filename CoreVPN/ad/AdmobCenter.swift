@@ -12,6 +12,7 @@ import GoogleMobileAds
 class AdmobCenter: NSObject {
     
     private var activeAd: InterstitialAd?
+    private var displayingAd: InterstitialAd?
     private var fetching = false
     private var keyPool: [String] = []
     private var keyPos = 0
@@ -37,7 +38,6 @@ class AdmobCenter: NSObject {
     
     func open(from viewController: UIViewController, moment: String?) {
         guard let activeAd = activeAd else {
-            onAdClosed?()
             return
         }
         
@@ -45,7 +45,7 @@ class AdmobCenter: NSObject {
         activeAd.present(from: viewController)
         
         // 上报展示事件
-        EventReporter.shared.sendAdEvent(moment: EventReporter.evtAdShow, key: adKeyId, adMoment: moment)
+        EventReporter.shared.sendAdEvent(event: EventReporter.evtAdShow, key: adKeyId, eventAd: moment)
     }
     
     func available() -> Bool {
@@ -105,7 +105,7 @@ class AdmobCenter: NSObject {
         debugPrint("[Ad-Admob] 尝试加载 key[\(keyPos)]: \(adKey)")
         
         // 上报开始加载事件
-        EventReporter.shared.sendAdEvent(moment: EventReporter.evtAdStart, key: adKey, adMoment: moment)
+        EventReporter.shared.sendAdEvent(event: EventReporter.evtAdStart, key: adKey, eventAd: moment)
         
         do {
             let ad = try await InterstitialAd.load(with: adKey, request: Request())
@@ -116,7 +116,7 @@ class AdmobCenter: NSObject {
             activeAd?.fullScreenContentDelegate = self
             
             // 上报加载成功事件
-            EventReporter.shared.sendAdEvent(moment: EventReporter.evtAdSuccess, key: ad.adUnitID, adMoment: moment)
+            EventReporter.shared.sendAdEvent(event: EventReporter.evtAdSuccess, key: ad.adUnitID, eventAd: moment)
             
             onAdReady?()
         } catch {
@@ -146,8 +146,21 @@ class AdmobCenter: NSObject {
 
 extension AdmobCenter: FullScreenContentDelegate {
     
+    func adWillPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
+        debugPrint("[Ad-Admob] 广告将展示")
+        AdCenter.shared.isShowingAd = true
+        displayingAd = activeAd
+        activeAd = nil
+        reload(moment: AdMoment.closead)
+    }
+    
     func adDidRecordImpression(_ ad: FullScreenPresentingAd) {
         debugPrint("[Ad-Admob] 广告已展示")
+    }
+    
+    func adDidRecordClick(_ ad: FullScreenPresentingAd) {
+        debugPrint("[Ad-Admob] 广告点击")
+        onAdClicked?()
     }
     
     func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
@@ -156,12 +169,12 @@ extension AdmobCenter: FullScreenContentDelegate {
     }
     
     func adWillDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
-        onAdClosed?()
-        reload()
+        AdCenter.shared.isShowingAd = false
     }
     
-    func adDidRecordClick(_ ad: FullScreenPresentingAd) {
-        onAdClicked?()
+    func adDidDismissFullScreenContent(_ ad: any FullScreenPresentingAd) {
+        debugPrint("[Ad-Admob] 广告关闭")
     }
+
 }
 

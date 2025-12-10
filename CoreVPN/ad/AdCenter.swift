@@ -22,7 +22,7 @@ class AdCenter {
     
     private var isAdsOpen: Bool {
         /// 测试服 关闭广告
-        return false
+        //return false
         
         if isVip {
             debugPrint("[Ad-Center] 广告关闭 | 原因: VIP用户")
@@ -32,8 +32,8 @@ class AdCenter {
         let isAdsOff = AppConfigStore.shared.getSavedAdsOff() ?? false
         let adType = AppConfigStore.shared.getSavedAdsType()?.components(separatedBy: ";") ?? []
         
-        debugPrint("[Ad-Center] 广告开关: \(isAdsOff ? "关闭" : "开启")")
-        debugPrint("[Ad-Center] 广告类型: \(adType)")
+//        debugPrint("[Ad-Center] 广告开关: \(isAdsOff ? "关闭" : "开启")")
+//        debugPrint("[Ad-Center] 广告类型: \(adType)")
         
         return !isAdsOff
     }

@@ -221,6 +221,18 @@ struct HomeConnectView: View {
         .onChange(of: viewModel.flowResult) { result in
             guard let result = result else { return }
             flowRouter.showResult(result)
+            
+            // 根据结果类型展示广告
+            switch result {
+            case .connectSuccess:
+                showAd(moment: AdMoment.connect)
+            case .disconnectSuccess:
+                showAd(moment: AdMoment.disconnect)
+            case .connectFail:
+                // 连接失败不出广告
+                break
+            }
+            
             viewModel.flowResult = nil
             viewModel.showFlowConnecting = false
         }
@@ -231,16 +243,33 @@ struct HomeConnectView: View {
         switch newStatus {
         case .connected:
             wasConnected = true
-            flowRouter.showResult(.connectSuccess)
         case .failed:
-            flowRouter.showResult(.connectFail)
+            break
         case .disconnected:
             if wasConnected {
-                flowRouter.showResult(.disconnectSuccess)
                 wasConnected = false
             }
         case .connecting:
             break
+        }
+    }
+    
+    /// 展示广告（根据结果类型）
+    private func showAd(moment: String) {
+        let adCenter = AdCenter.shared
+        
+        // 检查是否有广告可以展示
+        guard adCenter.checkOverallAvailability() else {
+            return
+        }
+        
+        // 按优先级展示广告：Admob > Yandex Banner > Yandex Int
+        if adCenter.checkAdmobStatus() {
+            adCenter.showAdmobIntFromRoot(moment: moment)
+        } else if adCenter.checkBannerStatus() {
+            adCenter.showYanBannerFromRoot()
+        } else if adCenter.checkIntStatus() {
+            adCenter.showYanIntFromRoot()
         }
     }
 }
