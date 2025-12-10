@@ -9,14 +9,14 @@ import Foundation
 import UIKit
 import YandexMobileAds
 
-class YanIntCenter: NSObject {
+class YanSlotHub: NSObject {
     
-    private var activeAd: InterstitialAd?
-    private var displayingAd: InterstitialAd?
-    private var keyPool: [String] = []
-    private var fetching = false
-    private var loadStartTime: Date?
-    private var keyPos = 0
+    private var cachedAd: InterstitialAd?
+    private var showingAd: InterstitialAd?
+    private var adUnitList: [String] = []
+    private var isLoading = false
+    private var loadStartAt: Date?
+    private var adUnitIndex = 0
     
     var onAdReady: (() -> Void)?
     var onAdFailed: (() -> Void)?
@@ -32,18 +32,16 @@ class YanIntCenter: NSObject {
     // MARK: - 广告配置和展示
     
     func initKeys() {
-        let yandexIntKey = AdsConfigStore.shared.intKey()
-        if !yandexIntKey.isEmpty {
-            self.keyPool = yandexIntKey.components(separatedBy: ";").filter { !$0.isEmpty }
-            debugPrint("[Ad-YanInt] 获取到 keys: \(keyPool.count) 个 | \(keyPool)")
+        adUnitList = YanEnv.adUnits()
+        if !adUnitList.isEmpty {
+            debugPrint("[Ad-YanInt] 获取到 keys: \(adUnitList.count) 个 | \(adUnitList)")
         } else {
-            self.keyPool = []
             debugPrint("[Ad-YanInt] 未找到 keys")
         }
     }
     
     func open(from viewController: UIViewController, moment: String?) {
-        guard let activeAd = activeAd else {
+        guard let activeAd = cachedAd else {
             onAdClosed?()
             return
         }
@@ -53,31 +51,31 @@ class YanIntCenter: NSObject {
     }
     
     func available() -> Bool {
-        return activeAd != nil
+        return cachedAd != nil
     }
     
     func getCurrentAd() -> InterstitialAd? {
-        return available() ? activeAd : nil
+        return available() ? cachedAd : nil
     }
     
     func clearAd() {
-        activeAd = nil
+        cachedAd = nil
         debugPrint("[Ad-YanInt] 清空广告")
     }
     
     // MARK: - 广告加载管理
     
     func fetch(moment: String? = nil) {
-        debugPrint("[Ad-YanInt] 开始加载 | 连接状态: \(AppGlobalStatus.shared.connectStatus)")
+        debugPrint("[Ad-YanInt] 开始加载 | 连接状态: \(YanEnv.connState())")
         
         if canStartFetch() {
             initKeys()
-            keyPos = 0
-            guard keyPool.count > keyPos else { return }
+            adUnitIndex = 0
+            guard adUnitList.count > adUnitIndex else { return }
             
             debugPrint("[Ad-YanInt] 启动加载流程")
-            fetching = true
-            loadStartTime = Date()
+            isLoading = true
+            loadStartAt = Date()
             
             Task {
                 await loadNext(index: 0, moment: moment)
@@ -93,19 +91,19 @@ class YanIntCenter: NSObject {
     // MARK: - 私有方法
     
     private func loadNext(index: Int, moment: String? = nil) async {
-        guard index < keyPool.count else {
+        guard index < adUnitList.count else {
             handleLoadFailure()
             return
         }
         
-        if let startTime = loadStartTime, Date().timeIntervalSince(startTime) > 100 {
+        if let startTime = loadStartAt, Date().timeIntervalSince(startTime) > YanEnv.timeout {
             debugPrint("[Ad-YanInt] 加载超时 (100s)")
-            fetching = false
+            isLoading = false
             handleLoadFailure()
             return
         }
         
-        let adKey = keyPool[index]
+        let adKey = adUnitList[index]
         debugPrint("[Ad-YanInt] 尝试加载 key[\(index)]: \(adKey)")
         
         let config = AdRequestConfiguration(adUnitID: adKey)
@@ -114,24 +112,24 @@ class YanIntCenter: NSObject {
     
     private func canStartFetch() -> Bool {
         if available() { return false }
-        if fetching {
-            guard let startTime = loadStartTime else { return false }
+        if isLoading {
+            guard let startTime = loadStartAt else { return false }
             let elapsedTime = Date().timeIntervalSince(startTime)
-            return elapsedTime > 100
+            return elapsedTime > YanEnv.timeout
         }
         return true
     }
     
     private func handleLoadFailure() {
-        fetching = false
+        isLoading = false
         onAdFailed?()
     }
     
     private func loadNextAd() {
-        keyPos += 1
-        if keyPos < keyPool.count {
+        adUnitIndex += 1
+        if adUnitIndex < adUnitList.count {
             Task {
-                await loadNext(index: keyPos)
+                await loadNext(index: adUnitIndex)
             }
         } else {
             handleLoadFailure()
@@ -139,15 +137,35 @@ class YanIntCenter: NSObject {
     }
 }
 
+// MARK: - 外部依赖封装
+private enum YanEnv {
+    static func adUnits() -> [String] {
+        AdsConfigStore.shared.intKey()
+            .components(separatedBy: ";")
+            .filter { !$0.isEmpty }
+    }
+    
+    static func connState() -> TunnelState {
+        AppGlobalStatus.shared.connectStatus
+    }
+    
+    static var isShowing: Bool {
+        get { AdCenter.shared.isShowingAd }
+        set { AdCenter.shared.isShowingAd = newValue }
+    }
+    
+    static var timeout: TimeInterval { 100 }
+}
+
 // MARK: - Yandex Delegate
 
-extension YanIntCenter: InterstitialAdLoaderDelegate, InterstitialAdDelegate {
+extension YanSlotHub: InterstitialAdLoaderDelegate, InterstitialAdDelegate {
     
     func interstitialAdLoader(_ adLoader: InterstitialAdLoader, didLoad interstitialAd: InterstitialAd) {
         debugPrint("[Ad-YanInt] ✅ 加载成功 | key: \(interstitialAd.adInfo?.adUnitId ?? "")")
-        fetching = false
-        activeAd = interstitialAd
-        activeAd?.delegate = self
+        isLoading = false
+        cachedAd = interstitialAd
+        cachedAd?.delegate = self
         onAdReady?()
     }
     
@@ -162,14 +180,14 @@ extension YanIntCenter: InterstitialAdLoaderDelegate, InterstitialAdDelegate {
     }
     
     func interstitialAdDidShow(_ interstitialAd: InterstitialAd) {
-        AdCenter.shared.isShowingAd = true
+        YanEnv.isShowing = true
         debugPrint("[Ad-YanInt] 广告已展示 | key: \(interstitialAd.adInfo?.adUnitId ?? "")")
     }
     
     func interstitialAdDidDismiss(_ interstitialAd: InterstitialAd) {
         onAdClosed?()
         reload()
-        AdCenter.shared.isShowingAd = false
+        YanEnv.isShowing = false
     }
     
     func interstitialAdDidClick(_ interstitialAd: InterstitialAd) {

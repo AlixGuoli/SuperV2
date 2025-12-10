@@ -214,7 +214,7 @@ class TunnelStateManager: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + maxWaitSeconds, execute: timeoutHandler)
         
         // 请求广告
-        AdCenter.shared.loadAdmobAd(moment: AdMoment.connect) { [weak self] in
+        AdCenter.shared.loadAdmobAd(moment: EventAd.connect) { [weak self] in
             guard let self = self, !isCompleted else { return }
             isCompleted = true
             timeoutHandler.cancel()

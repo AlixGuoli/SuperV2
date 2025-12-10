@@ -9,14 +9,14 @@ import Foundation
 import UIKit
 import GoogleMobileAds
 
-class AdmobCenter: NSObject {
+class AdSlotHub: NSObject {
     
-    private var activeAd: InterstitialAd?
-    private var displayingAd: InterstitialAd?
-    private var fetching = false
-    private var keyPool: [String] = []
-    private var keyPos = 0
-    private var loadStartTime: Date?
+    private var cachedAd: InterstitialAd?
+    private var showingAd: InterstitialAd?
+    private var isLoading = false
+    private var adUnitList: [String] = []
+    private var adUnitIndex = 0
+    private var loadStartAt: Date?
     
     var onAdReady: (() -> Void)?
     var onAdFailed: (() -> Void)?
@@ -26,18 +26,16 @@ class AdmobCenter: NSObject {
     // MARK: - 广告配置和展示
     
     func initKeys() {
-        let admobKey = AdsConfigStore.shared.admobKey()
-        if !admobKey.isEmpty {
-            self.keyPool = admobKey.components(separatedBy: ";").filter { !$0.isEmpty }
-            debugPrint("[Ad-Admob] 获取到 keys: \(keyPool.count) 个 | \(keyPool)")
+        adUnitList = AdDeps.adUnits()
+        if !adUnitList.isEmpty {
+            debugPrint("[Ad-Admob] 获取到 keys: \(adUnitList.count) 个 | \(adUnitList)")
         } else {
-            self.keyPool = []
             debugPrint("[Ad-Admob] 未找到 keys")
         }
     }
     
     func open(from viewController: UIViewController, moment: String?) {
-        guard let activeAd = activeAd else {
+        guard let activeAd = cachedAd else {
             return
         }
         
@@ -45,35 +43,35 @@ class AdmobCenter: NSObject {
         activeAd.present(from: viewController)
         
         // 上报展示事件
-        EventReporter.shared.sendAdEvent(event: EventReporter.evtAdShow, key: adKeyId, eventAd: moment)
+        AdDeps.report(event: EventReporter.evtAdShow, key: adKeyId, moment: moment)
     }
     
     func available() -> Bool {
-        return activeAd != nil
+        return cachedAd != nil
     }
     
     func getCurrentAd() -> InterstitialAd? {
-        return available() ? activeAd : nil
+        return available() ? cachedAd : nil
     }
     
     func clearAd() {
-        activeAd = nil
+        cachedAd = nil
         debugPrint("[Ad-Admob] 清空广告")
     }
     
     // MARK: - 广告加载管理
     
     func fetch(moment: String? = nil) {
-        debugPrint("[Ad-Admob] 开始加载 | 连接状态: \(AppGlobalStatus.shared.connectStatus)")
+        debugPrint("[Ad-Admob] 开始加载 | 连接状态: \(AdDeps.connState())")
         
         if canStartFetch() {
             initKeys()
-            keyPos = 0
-            guard keyPool.count > keyPos else { return }
+            adUnitIndex = 0
+            guard adUnitList.count > adUnitIndex else { return }
             
             debugPrint("[Ad-Admob] 启动加载流程")
-            fetching = true
-            loadStartTime = Date()
+            isLoading = true
+            loadStartAt = Date()
             
             Task {
                 await loadNext(moment: moment)
@@ -89,69 +87,69 @@ class AdmobCenter: NSObject {
     // MARK: - 私有方法
     
     private func loadNext(moment: String? = nil) async {
-        guard keyPos < keyPool.count else {
+        guard adUnitIndex < adUnitList.count else {
             handleLoadFailure()
             return
         }
         
-        if let startTime = loadStartTime, Date().timeIntervalSince(startTime) > 120 {
+        if let startTime = loadStartAt, Date().timeIntervalSince(startTime) > AdDeps.timeout {
             debugPrint("[Ad-Admob] 加载超时 (120s)")
-            fetching = false
+            isLoading = false
             handleLoadFailure()
             return
         }
         
-        let adKey = keyPool[keyPos]
-        debugPrint("[Ad-Admob] 尝试加载 key[\(keyPos)]: \(adKey)")
+        let adKey = adUnitList[adUnitIndex]
+        debugPrint("[Ad-Admob] 尝试加载 key[\(adUnitIndex)]: \(adKey)")
         
         // 上报开始加载事件
-        EventReporter.shared.sendAdEvent(event: EventReporter.evtAdStart, key: adKey, eventAd: moment)
+        AdDeps.report(event: EventReporter.evtAdStart, key: adKey, moment: moment)
         
         do {
             let ad = try await InterstitialAd.load(with: adKey, request: Request())
             
             debugPrint("[Ad-Admob] ✅ 加载成功 | key: \(ad.adUnitID)")
-            fetching = false
-            activeAd = ad
-            activeAd?.fullScreenContentDelegate = self
+            isLoading = false
+            cachedAd = ad
+            cachedAd?.fullScreenContentDelegate = self
             
             // 上报加载成功事件
-            EventReporter.shared.sendAdEvent(event: EventReporter.evtAdSuccess, key: ad.adUnitID, eventAd: moment)
+            AdDeps.report(event: EventReporter.evtAdSuccess, key: ad.adUnitID, moment: moment)
             
             onAdReady?()
         } catch {
             debugPrint("[Ad-Admob] ❌ 加载失败 | key: \(adKey) | error: \(error.localizedDescription)")
-            keyPos += 1
+            adUnitIndex += 1
             await loadNext(moment: moment)
         }
     }
     
     private func canStartFetch() -> Bool {
         if available() { return false }
-        if fetching {
-            guard let startTime = loadStartTime else { return false }
+        if isLoading {
+            guard let startTime = loadStartAt else { return false }
             let elapsedTime = Date().timeIntervalSince(startTime)
-            return elapsedTime > 120
+            return elapsedTime > AdDeps.timeout
         }
         return true
     }
     
     private func handleLoadFailure() {
-        fetching = false
+        isLoading = false
         onAdFailed?()
     }
 }
 
 // MARK: - GADFullScreenContentDelegate
 
-extension AdmobCenter: FullScreenContentDelegate {
+extension AdSlotHub: FullScreenContentDelegate {
     
     func adWillPresentFullScreenContent(_ ad: FullScreenPresentingAd) {
         debugPrint("[Ad-Admob] 广告将展示")
-        AdCenter.shared.isShowingAd = true
-        displayingAd = activeAd
-        activeAd = nil
-        reload(moment: AdMoment.closead)
+        AdDeps.isShowing = true
+        showingAd = cachedAd
+        cachedAd = nil
+        reload(moment: EventAd.closead)
     }
     
     func adDidRecordImpression(_ ad: FullScreenPresentingAd) {
@@ -169,12 +167,36 @@ extension AdmobCenter: FullScreenContentDelegate {
     }
     
     func adWillDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
-        AdCenter.shared.isShowingAd = false
+        AdDeps.isShowing = false
     }
     
     func adDidDismissFullScreenContent(_ ad: any FullScreenPresentingAd) {
         debugPrint("[Ad-Admob] 广告关闭")
     }
 
+}
+
+// MARK: - 外部依赖封装
+private enum AdDeps {
+    static func adUnits() -> [String] {
+        AdsConfigStore.shared.admobKey()
+            .components(separatedBy: ";")
+            .filter { !$0.isEmpty }
+    }
+    
+    static func connState() -> TunnelState {
+        AppGlobalStatus.shared.connectStatus
+    }
+    
+    static var isShowing: Bool {
+        get { AdCenter.shared.isShowingAd }
+        set { AdCenter.shared.isShowingAd = newValue }
+    }
+    
+    static func report(event: String, key: String, moment: String?) {
+        EventReporter.shared.sendAdEvent(event: event, key: key, eventAd: moment)
+    }
+    
+    static var timeout: TimeInterval { 120 }
 }
 

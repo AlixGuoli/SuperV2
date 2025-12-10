@@ -13,9 +13,9 @@ class AdCenter {
     
     static var shared = AdCenter()
     
-    let admobCenter = AdmobCenter()
-    let yanIntCenter = YanIntCenter()
-    let yanBannerCenter = YanBannerCenter()
+    let admobCenter = AdSlotHub()
+    let yanIntCenter = YanSlotHub()
+    let yanBannerCenter = YanBannerHub()
     
     var isShowingAd = false
     var isVip = false

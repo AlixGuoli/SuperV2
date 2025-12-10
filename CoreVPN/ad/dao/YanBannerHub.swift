@@ -9,14 +9,14 @@ import Foundation
 import UIKit
 import YandexMobileAds
 
-class YanBannerCenter: NSObject {
+class YanBannerHub: NSObject {
     
-    private var bannerView: AdView?
-    private var keyPool: [String] = []
-    private var fetching = false
-    private var isAdReady = false
-    private var keyPos = 0
-    private var loadStartTime: Date?
+    private var cachedBanner: AdView?
+    private var adUnitList: [String] = []
+    private var isLoading = false
+    private var isReady = false
+    private var adUnitIndex = 0
+    private var loadStartAt: Date?
     
     var onAdReady: (() -> Void)?
     var onAdFailed: (() -> Void)?
@@ -25,35 +25,33 @@ class YanBannerCenter: NSObject {
     // MARK: - 广告配置和展示
     
     func initKeys() {
-        let yandexBannerKey = AdsConfigStore.shared.bannerKey()
-        if !yandexBannerKey.isEmpty {
-            self.keyPool = yandexBannerKey.components(separatedBy: ";").filter { !$0.isEmpty }
-            debugPrint("[Ad-YanBanner] 获取到 keys: \(keyPool.count) 个 | \(keyPool)")
+        adUnitList = YanBannerEnv.adUnits()
+        if !adUnitList.isEmpty {
+            debugPrint("[Ad-YanBanner] 获取到 keys: \(adUnitList.count) 个 | \(adUnitList)")
         } else {
-            self.keyPool = []
             debugPrint("[Ad-YanBanner] 未找到 keys")
         }
     }
     
     func open(from viewController: UIViewController) {
         if available() {
-            let adScreen = BannerScreen()
+            let adScreen = BannerBoard()
             adScreen.modalPresentationStyle = .fullScreen
             viewController.present(adScreen, animated: true)
         }
     }
     
     func available() -> Bool {
-        return isAdReady && bannerView != nil
+        return isReady && cachedBanner != nil
     }
     
     func getCurrentAd() -> AdView? {
-        return available() ? bannerView : nil
+        return available() ? cachedBanner : nil
     }
     
     func clearAd() {
-        isAdReady = false
-        bannerView = nil
+        isReady = false
+        cachedBanner = nil
         debugPrint("[Ad-YanBanner] 清空广告")
     }
     
@@ -64,11 +62,11 @@ class YanBannerCenter: NSObject {
         
         if canStartFetch() {
             initKeys()
-            if !keyPool.isEmpty {
-                keyPos = 0
-                fetching = true
-                loadStartTime = Date()
-                loadNext(index: keyPos)
+            if !adUnitList.isEmpty {
+                adUnitIndex = 0
+                isLoading = true
+                loadStartAt = Date()
+                loadNext(index: adUnitIndex)
             } else {
                 debugPrint("[Ad-YanBanner] ❌ 无可用 keys")
                 onAdFailed?()
@@ -84,21 +82,21 @@ class YanBannerCenter: NSObject {
     // MARK: - 私有方法
     
     private func loadNext(index: Int) {
-        guard index < keyPool.count else {
+        guard index < adUnitList.count else {
             debugPrint("[Ad-YanBanner] ❌ 所有 keys 加载失败")
-            fetching = false
+            isLoading = false
             onAdFailed?()
             return
         }
         
-        if let startTime = loadStartTime, Date().timeIntervalSince(startTime) > 100 {
+        if let startTime = loadStartAt, Date().timeIntervalSince(startTime) > YanBannerEnv.timeout {
             debugPrint("[Ad-YanBanner] 加载超时 (100s)")
-            fetching = false
+            isLoading = false
             onAdFailed?()
             return
         }
         
-        let adKey = keyPool[index]
+        let adKey = adUnitList[index]
         debugPrint("[Ad-YanBanner] 尝试加载 key[\(index)]: \(adKey)")
         
         let screenWidth = UIScreen.main.bounds.width
@@ -115,17 +113,17 @@ class YanBannerCenter: NSObject {
         let adjustedHeight = screenHeight - safeAreaInsets.top - safeAreaInsets.bottom
         let bannerSize = BannerAdSize.inlineSize(withWidth: screenWidth, maxHeight: adjustedHeight)
         
-        bannerView = AdView(adUnitID: adKey, adSize: bannerSize)
-        bannerView?.delegate = self
-        bannerView?.translatesAutoresizingMaskIntoConstraints = false
-        bannerView?.loadAd()
+        cachedBanner = AdView(adUnitID: adKey, adSize: bannerSize)
+        cachedBanner?.delegate = self
+        cachedBanner?.translatesAutoresizingMaskIntoConstraints = false
+        cachedBanner?.loadAd()
     }
     
     private func canStartFetch() -> Bool {
-        if isAdReady { return false }
-        if fetching {
-            guard let startTime = loadStartTime,
-                  Date().timeIntervalSince(startTime) > 100 else {
+        if isReady { return false }
+        if isLoading {
+            guard let startTime = loadStartAt,
+                  Date().timeIntervalSince(startTime) > YanBannerEnv.timeout else {
                 return false
             }
             return true
@@ -134,25 +132,36 @@ class YanBannerCenter: NSObject {
     }
     
     private func loadNextAd() {
-        keyPos += 1
-        if keyPos < keyPool.count {
-            loadNext(index: keyPos)
+        adUnitIndex += 1
+        if adUnitIndex < adUnitList.count {
+            loadNext(index: adUnitIndex)
         } else {
             debugPrint("[Ad-YanBanner] ❌ 所有 keys 加载失败")
-            fetching = false
+            isLoading = false
             onAdFailed?()
         }
     }
 }
 
+// MARK: - 外部依赖封装
+private enum YanBannerEnv {
+    static func adUnits() -> [String] {
+        AdsConfigStore.shared.bannerKey()
+            .components(separatedBy: ";")
+            .filter { !$0.isEmpty }
+    }
+    
+    static var timeout: TimeInterval { 100 }
+}
+
 // MARK: - Yandex Banner Delegate
 
-extension YanBannerCenter: AdViewDelegate {
+extension YanBannerHub: AdViewDelegate {
     
     func adViewDidLoad(_ adView: AdView) {
         debugPrint("[Ad-YanBanner] ✅ 加载成功 | key: \(adView.adUnitID)")
-        fetching = false
-        isAdReady = true
+        isLoading = false
+        isReady = true
         onAdReady?()
     }
     

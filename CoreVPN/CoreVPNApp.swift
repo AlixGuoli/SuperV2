@@ -149,7 +149,7 @@ struct CoreVPNApp: App {
         let adCenter = AdCenter.shared
         
         // 拉广告
-        adCenter.loadAllAdvertisements(moment: AdMoment.foreground)
+        adCenter.loadAllAdvertisements(moment: EventAd.foreground)
         
         if canShowReturnSplash(adCenter: adCenter) {
             debugPrint("[Ad-Background] ✅ 显示后台启动页")
@@ -250,7 +250,7 @@ struct CoreVPNApp: App {
         // 优先级顺序：Admob > Yandex Banner > Yandex Int
         if adCenter.checkAdmobStatus() {
             debugPrint("[Ad-Background] ❤️ 展示 Admob")
-            adCenter.showAdmobIntFromRoot(moment: AdMoment.foreground)
+            adCenter.showAdmobIntFromRoot(moment: EventAd.foreground)
             return true
         } else if adCenter.checkBannerStatus() {
             debugPrint("[Ad-Background] ❤️ 展示 Yandex Banner")

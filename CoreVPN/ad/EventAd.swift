@@ -7,7 +7,7 @@
 
 import Foundation
 
-class AdMoment {
+class EventAd {
     static var appSplash = "launchApp"
     static var foreground = "foreground"
     static var connect = "connect"

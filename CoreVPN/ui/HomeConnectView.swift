@@ -225,9 +225,9 @@ struct HomeConnectView: View {
             // 根据结果类型展示广告
             switch result {
             case .connectSuccess:
-                showAd(moment: AdMoment.connect)
+                showAd(moment: EventAd.connect)
             case .disconnectSuccess:
-                showAd(moment: AdMoment.disconnect)
+                showAd(moment: EventAd.disconnect)
             case .connectFail:
                 // 连接失败不出广告
                 break
