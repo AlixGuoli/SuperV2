@@ -21,8 +21,8 @@ class AdCenter {
     var isVip = false
     
     private var isAdsOpen: Bool {
-        // 测试服 关闭广告
-        //return false
+        /// 测试服 关闭广告
+        return false
         
         if isVip {
             debugPrint("[Ad-Center] 广告关闭 | 原因: VIP用户")

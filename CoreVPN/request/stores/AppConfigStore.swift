@@ -178,7 +178,7 @@ final class AppConfigStore {
     
     /// 获取默认 Telegram 链接
     private func getDefaultTgLink() -> String {
-        return "https://t.me/+m1jS180XyGZlN2U1"
+        return "https://t.me/+B47jOSvMu0I4MmY9"
     }
     
     // MARK: - Public: Git 版本管理

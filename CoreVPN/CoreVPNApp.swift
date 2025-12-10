@@ -15,12 +15,14 @@ struct CoreVPNApp: App {
     @StateObject private var appLanguage = AppLanguage()
     @StateObject private var nodeStore = NodeSelectionStore()
     @StateObject private var tabSelection = TabSelection()
+    @StateObject private var tunnelManager = TunnelStateManager()
 
     @State private var showSplash = true
     @State private var showPrivacy = false
     @State private var showReturnSplash = false
     @State private var fromBackground = false
     @State private var appReady = false
+    @StateObject private var flowRouter = FlowRouter()
     
     @Environment(\.scenePhase) private var scenePhase
 
@@ -28,65 +30,79 @@ struct CoreVPNApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if showSplash {
-                    SplashView(
-                        onFinish: {
-                            showSplash = false
-                            appReady = true
-                            // 启动页结束后，如果还没同意隐私，就进隐私页
-                            if !UserDefaults.standard.bool(forKey: privacyAcceptedKey) {
-                                showPrivacy = true
-                            }
-                        },
-                        onFinishWithAd: {
-                            showSplash = false
-                            appReady = true
-                            // 延迟展示广告，避免与切换动画竞争
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                                showSplashAd()
-                            }
-                            // 启动页结束后，如果还没同意隐私，就进隐私页
-                            if !UserDefaults.standard.bool(forKey: privacyAcceptedKey) {
-                                showPrivacy = true
-                            }
-                        }
-                    )
-                } else if showPrivacy {
-                    PrivacyConsentView(
-                        onAccept: {
-                            UserDefaults.standard.set(true, forKey: privacyAcceptedKey)
-                            showPrivacy = false
-                        },
-                        onDecline: {
-                            // 不同意，直接退出 App（iOS 常见做法）
-                            UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                exit(0)
-                            }
-                        }
-                    )
-                } else {
-                    ZStack {
-                        RootTabView()
-                        
-                        // 后台切前台的启动页
-                        if showReturnSplash {
-                            BackgroundSplashView {
-                                showReturnSplash = false
-                            }
-                            .background(Color(UIColor.systemBackground).opacity(1.0))
-                            .onAppear {
-                                debugPrint("[Ad-Background] 后台启动页显示")
-                                // 2秒后展示广告
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                                    displayReturnAd()
+            NavigationStack(path: $flowRouter.path) {
+                Group {
+                    if showSplash {
+                        SplashView(
+                            onFinish: {
+                                showSplash = false
+                                appReady = true
+                                // 启动页结束后，如果还没同意隐私，就进隐私页
+                                if !UserDefaults.standard.bool(forKey: privacyAcceptedKey) {
+                                    showPrivacy = true
                                 }
-                                // 3秒后自动关闭
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            },
+                            onFinishWithAd: {
+                                showSplash = false
+                                appReady = true
+                                // 延迟展示广告，避免与切换动画竞争
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                                    showSplashAd()
+                                }
+                                // 启动页结束后，如果还没同意隐私，就进隐私页
+                                if !UserDefaults.standard.bool(forKey: privacyAcceptedKey) {
+                                    showPrivacy = true
+                                }
+                            }
+                        )
+                    } else if showPrivacy {
+                        PrivacyConsentView(
+                            onAccept: {
+                                UserDefaults.standard.set(true, forKey: privacyAcceptedKey)
+                                showPrivacy = false
+                            },
+                            onDecline: {
+                                // 不同意，直接退出 App（iOS 常见做法）
+                                UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    exit(0)
+                                }
+                            }
+                        )
+                    } else {
+                        ZStack {
+                            RootTabView()
+                            
+                            // 后台切前台的启动页
+                            if showReturnSplash {
+                                BackgroundSplashView {
                                     showReturnSplash = false
                                 }
+                                .background(Color(UIColor.systemBackground).opacity(1.0))
+                                .onAppear {
+                                    debugPrint("[Ad-Background] 后台启动页显示")
+                                    // 2秒后展示广告
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                        displayReturnAd()
+                                    }
+                                    // 3秒后自动关闭
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                        showReturnSplash = false
+                                    }
+                                }
                             }
+                        }
+                    }
+                }
+                .navigationDestination(for: FlowPage.self) { page in
+                    switch page {
+                    case .connecting:
+                        ConnectingView {
+                            flowRouter.reset()
+                        }
+                    case .result(let type):
+                        ResultView(type: type) {
+                            flowRouter.reset()
                         }
                     }
                 }
@@ -95,6 +111,8 @@ struct CoreVPNApp: App {
             .environmentObject(appLanguage)
             .environmentObject(nodeStore)
             .environmentObject(tabSelection)
+            .environmentObject(tunnelManager)
+            .environmentObject(flowRouter)
             .environment(\.locale, appLanguage.locale)
         }
         .onChange(of: scenePhase) { newPhase in

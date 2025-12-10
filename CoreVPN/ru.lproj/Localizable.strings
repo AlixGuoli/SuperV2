@@ -120,6 +120,24 @@
 "about_feature_nodes" = "Несколько регионов для разных сетевых условий.";
 "about_feature_healthcheck" = "Встроенная проверка сети, чтобы понимать текущее качество.";
 
+"ReviewPrompt_Title" = "Оцените нас";
+"ReviewPrompt_Body" = "Ваши положительные отзывы помогают нам становиться лучше — будем рады вашей быстрой оценке!";
+
+"connecting_title" = "Подключение…";
+"connecting_subtitle" = "Пожалуйста, подождите — мы устанавливаем защищённый канал";
+"connecting_close" = "Закрыть";
+"connecting_nav_title" = "Подключение";
+
 "BannerWaitText" = "Пропустить рекламу через %ld";
 "BannerSkipText" = "Пропустить";
+
+"result_telegram_title" = "Присоединиться к Telegram";
+"result_telegram_subtitle" = "Получить поддержку и обновления";
+"result_share_title" = "Поделиться приложением";
+"result_share_subtitle" = "Поделиться с друзьями";
+
+"result_connect_success" = "Подключено успешно";
+"result_connect_fail" = "Ошибка подключения";
+"result_disconnect_success" = "Отключено";
+"result_nav_title" = "Результат";
 

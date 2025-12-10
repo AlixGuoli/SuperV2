@@ -1,9 +1,12 @@
 import SwiftUI
 
 struct HomeConnectView: View {
-    @StateObject private var viewModel = TunnelStateManager()
+    @EnvironmentObject private var viewModel: TunnelStateManager
     @EnvironmentObject private var nodeStore: NodeSelectionStore
     @EnvironmentObject private var tabSelection: TabSelection
+    @EnvironmentObject private var flowRouter: FlowRouter
+    
+    @State private var wasConnected = false
     
     private var isConnected: Bool {
         viewModel.connectionStatus == .connected
@@ -87,6 +90,10 @@ struct HomeConnectView: View {
                         .blur(radius: 20)
                     
                     Button(action: {
+                        // 仅在发起连接时展示“连接中”页，断开不展示
+                        if viewModel.connectionStatus != .connected {
+                            viewModel.showFlowConnecting = true  // 由 VM 决定
+                        }
                         viewModel.toggleConnection()
                     }) {
                         ZStack {
@@ -202,6 +209,38 @@ struct HomeConnectView: View {
                 )
                 .zIndex(1000)
             }
+        }
+        .onChange(of: viewModel.connectionStatus) { newStatus in
+            handleStatusChange(newStatus)
+        }
+        .onChange(of: viewModel.showFlowConnecting) { show in
+            if show {
+                flowRouter.showConnecting()
+            }
+        }
+        .onChange(of: viewModel.flowResult) { result in
+            guard let result = result else { return }
+            flowRouter.showResult(result)
+            viewModel.flowResult = nil
+            viewModel.showFlowConnecting = false
+        }
+    }
+    
+    // 监听连接状态变化，驱动结果页
+    private func handleStatusChange(_ newStatus: TunnelState) {
+        switch newStatus {
+        case .connected:
+            wasConnected = true
+            flowRouter.showResult(.connectSuccess)
+        case .failed:
+            flowRouter.showResult(.connectFail)
+        case .disconnected:
+            if wasConnected {
+                flowRouter.showResult(.disconnectSuccess)
+                wasConnected = false
+            }
+        case .connecting:
+            break
         }
     }
 }

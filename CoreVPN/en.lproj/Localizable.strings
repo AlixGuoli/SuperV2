@@ -120,5 +120,23 @@
 "about_feature_nodes" = "Multiple regions available to match different network conditions.";
 "about_feature_healthcheck" = "Built‑in network check to help you understand current quality.";
 
+"ReviewPrompt_Title" = "Rate Us";
+"ReviewPrompt_Body" = "Your positive feedback keeps us improving — we appreciate your quick rating!";
+
+"connecting_title" = "Connecting…";
+"connecting_subtitle" = "Please wait, we’re establishing a secure channel";
+"connecting_close" = "Close";
+"connecting_nav_title" = "Connecting";
+
 "BannerWaitText" = "Skip Ad %ldS";
 "BannerSkipText" = "Skip Ad";
+
+"result_telegram_title" = "Join Telegram";
+"result_telegram_subtitle" = "Get support and updates";
+"result_share_title" = "Share App";
+"result_share_subtitle" = "Share with friends";
+
+"result_connect_success" = "Connected Successfully";
+"result_connect_fail" = "Connection Failed";
+"result_disconnect_success" = "Disconnected";
+"result_nav_title" = "Result";

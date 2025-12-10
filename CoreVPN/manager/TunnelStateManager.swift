@@ -21,6 +21,10 @@ class TunnelStateManager: ObservableObject {
         }
     }
     @Published var showDisconnectConfirm: Bool = false
+    
+    // UI流程：连接中/结果
+    @Published var showFlowConnecting: Bool = false
+    @Published var flowResult: ResultType? = nil
     @Published var connectedSince: Date?        // 开始连接时间
     @Published var elapsedDisplay: String = ""  // 展示用的连接时长文本
     @Published var fakeLatencyText: String = "-- ms"      // 底部卡片：延迟
@@ -35,6 +39,7 @@ class TunnelStateManager: ObservableObject {
     }
     
     private var userTriggered: Bool = false  // 标记是否用户主动连接
+    private var hasEverConnected: Bool = false
     private var timer: Timer?
     private let connectionTimestampKey = "ConnectionTimestamp"
     private var connectionId: String? = nil  // 连接会话ID（用于上报）
@@ -146,12 +151,18 @@ class TunnelStateManager: ObservableObject {
                 }
                 startTimerIfNeeded()
                 connectionStatus = .connected
+                hasEverConnected = true
             }
             
         case .disconnected, .invalid:
             debugPrint("TunnelStateManager: 系统已断开")
             connectionStatus = .disconnected
             userTriggered = false
+            if hasEverConnected {
+                flowResult = .disconnectSuccess
+                showFlowConnecting = false
+                hasEverConnected = false
+            }
             connectedSince = nil
             elapsedDisplay = ""
             UserDefaults.standard.removeObject(forKey: connectionTimestampKey)
@@ -196,6 +207,9 @@ class TunnelStateManager: ObservableObject {
                 }
                 self.startTimerIfNeeded()
                 self.connectionStatus = .connected
+                self.hasEverConnected = true
+                self.showFlowConnecting = false
+                self.flowResult = .connectSuccess
                     
                     // 连接成功：保存配置到 UserDefaults（如果来自接口请求）
                     let store = ServiceConfigStore.shared
@@ -228,6 +242,8 @@ class TunnelStateManager: ObservableObject {
                         ip: store.ipService,
                         sid: self.connectionId
                     )
+                self.showFlowConnecting = false
+                self.flowResult = .connectFail
             }
             self.userTriggered = false
             }
@@ -255,6 +271,7 @@ class TunnelStateManager: ObservableObject {
         connectedSince = nil
         elapsedDisplay = ""
         stopTimer()
+        showFlowConnecting = true
         
         // 生成连接ID并上报连接开始事件
         connectionId = EventReporter.makeRandomId()
