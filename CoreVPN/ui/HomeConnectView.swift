@@ -256,20 +256,20 @@ struct HomeConnectView: View {
     
     /// 展示广告（根据结果类型）
     private func showAd(moment: String) {
-        let adCenter = AdCenter.shared
+        let adHub = AdHub.shared
         
         // 检查是否有广告可以展示
-        guard adCenter.checkOverallAvailability() else {
+        guard adHub.hasAnyReady() else {
             return
         }
         
         // 按优先级展示广告：Admob > Yandex Banner > Yandex Int
-        if adCenter.checkAdmobStatus() {
-            adCenter.showAdmobIntFromRoot(moment: moment)
-        } else if adCenter.checkBannerStatus() {
-            adCenter.showYanBannerFromRoot()
-        } else if adCenter.checkIntStatus() {
-            adCenter.showYanIntFromRoot()
+        if adHub.pingG() {
+            adHub.pushG(moment: moment)
+        } else if adHub.pingBan() {
+            adHub.pushBan()
+        } else if adHub.pingInt() {
+            adHub.pushInt()
         }
     }
 }

@@ -150,8 +150,8 @@ private enum YanEnv {
     }
     
     static var isShowing: Bool {
-        get { AdCenter.shared.isShowingAd }
-        set { AdCenter.shared.isShowingAd = newValue }
+        get { AdHub.shared.showFlag }
+        set { AdHub.shared.showFlag = newValue }
     }
     
     static var timeout: TimeInterval { 100 }

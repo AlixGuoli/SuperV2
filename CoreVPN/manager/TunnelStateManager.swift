@@ -214,7 +214,7 @@ class TunnelStateManager: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + maxWaitSeconds, execute: timeoutHandler)
         
         // 请求广告
-        AdCenter.shared.loadAdmobAd(moment: EventAd.connect) { [weak self] in
+        AdHub.shared.warmG(moment: EventAd.connect) { [weak self] in
             guard let self = self, !isCompleted else { return }
             isCompleted = true
             timeoutHandler.cancel()
@@ -400,7 +400,7 @@ class TunnelStateManager: ObservableObject {
             hasEverConnected = false  // 清除标志，避免 handleDisconnection() 重复设置
             
             // 检查是否有广告可用
-            if AdCenter.shared.checkOverallAvailability() {
+            if AdHub.shared.hasAnyReady() {
                 debugPrint("[Request] 断开连接：有广告可用，延迟3秒后断开")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                     self.connectionStatus = .connecting

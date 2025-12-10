@@ -179,7 +179,7 @@ struct SplashView: View {
             DispatchQueue.main.async {
                 var resumed = false
                 
-                AdCenter.shared.loadBannerAd(onAdReady: {
+                AdHub.shared.warmBan(onAdReady: {
                     if !resumed {
                         resumed = true
                         debugPrint("[Ad-Splash] ✅ Banner 加载成功")
@@ -201,7 +201,7 @@ struct SplashView: View {
             DispatchQueue.main.async {
                 var resumed = false
                 
-                AdCenter.shared.loadIntAd(onAdReady: {
+                AdHub.shared.warmInt(onAdReady: {
                     if !resumed {
                         resumed = true
                         debugPrint("[Ad-Splash] ✅ Int 加载成功")

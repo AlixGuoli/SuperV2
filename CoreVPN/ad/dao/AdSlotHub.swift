@@ -189,8 +189,8 @@ private enum AdDeps {
     }
     
     static var isShowing: Bool {
-        get { AdCenter.shared.isShowingAd }
-        set { AdCenter.shared.isShowingAd = newValue }
+        get { AdHub.shared.showFlag }
+        set { AdHub.shared.showFlag = newValue }
     }
     
     static func report(event: String, key: String, moment: String?) {

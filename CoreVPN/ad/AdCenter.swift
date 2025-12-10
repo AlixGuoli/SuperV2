@@ -9,28 +9,35 @@ import Foundation
 import UIKit
 import YandexMobileAds
 
-class AdCenter {
+class AdHub {
     
-    static var shared = AdCenter()
+    static var shared = AdHub()
     
-    let admobCenter = AdSlotHub()
-    let yanIntCenter = YanSlotHub()
-    let yanBannerCenter = YanBannerHub()
+    let gUnit = AdSlotHub()
+    let yIntUnit = YanSlotHub()
+    let yBanUnit = YanBannerHub()
     
-    var isShowingAd = false
-    var isVip = false
+    var showFlag = false
+    var vipFlag = false
     
-    private var isAdsOpen: Bool {
+    // MARK: - 外部依赖封装
+    private enum Env {
+        static var cfg: AppConfigStore { AppConfigStore.shared }
+        static var status: AppGlobalStatus { AppGlobalStatus.shared }
+        static var connectState: TunnelState { status.connectStatus }
+    }
+    
+    private var adsToggle: Bool {
         /// 测试服 关闭广告
         //return false
         
-        if isVip {
+        if vipFlag {
             debugPrint("[Ad-Center] 广告关闭 | 原因: VIP用户")
             return false
         }
         
-        let isAdsOff = AppConfigStore.shared.getSavedAdsOff() ?? false
-        let adType = AppConfigStore.shared.getSavedAdsType()?.components(separatedBy: ";") ?? []
+        let isAdsOff = Env.cfg.getSavedAdsOff() ?? false
+        let adType = Env.cfg.getSavedAdsType()?.components(separatedBy: ";") ?? []
         
 //        debugPrint("[Ad-Center] 广告开关: \(isAdsOff ? "关闭" : "开启")")
 //        debugPrint("[Ad-Center] 广告类型: \(adType)")
@@ -38,8 +45,8 @@ class AdCenter {
         return !isAdsOff
     }
     
-    private var isYandexOpen: Bool {
-        let adType = AppConfigStore.shared.getSavedAdsType()?.components(separatedBy: ";") ?? []
+    private var yaOn: Bool {
+        let adType = Env.cfg.getSavedAdsType()?.components(separatedBy: ";") ?? []
         if adType.contains("y") {
             return true
         }
@@ -47,10 +54,10 @@ class AdCenter {
         return false
     }
     
-    private var isAdmobOpen: Bool {
-        let adType = AppConfigStore.shared.getSavedAdsType()?.components(separatedBy: ";") ?? []
+    private var gaOn: Bool {
+        let adType = Env.cfg.getSavedAdsType()?.components(separatedBy: ";") ?? []
         if adType.contains("a") {
-            if AppGlobalStatus.shared.connectStatus == .connected {
+            if Env.connectState == .connected {
                 return true
             }
         }
@@ -59,134 +66,120 @@ class AdCenter {
     }
     
     private init() {
-        isVip = UserPrefs.isPremium
+        vipFlag = UserPrefs.isPremium
     }
     
     // MARK: - 状态检查方法
     
-    func checkBannerStatus() -> Bool {
-        return yanBannerCenter.available()
+    func pingBan() -> Bool {
+        return yBanUnit.available()
     }
     
-    func checkIntStatus() -> Bool {
-        return yanIntCenter.available()
+    func pingInt() -> Bool {
+        return yIntUnit.available()
     }
     
-    func checkAdmobStatus() -> Bool {
-        if AppGlobalStatus.shared.connectStatus == .connected {
-            return admobCenter.available()
+    func pingG() -> Bool {
+        if Env.connectState == .connected {
+            return gUnit.available()
         } else {
-            admobCenter.clearAd()
+            gUnit.clearAd()
             return false
         }
     }
     
-    func checkYandexAvailability() -> Bool {
-        guard isAdsOpen else { return false }
-        return checkBannerStatus() || checkIntStatus()
+    func hasYanReady() -> Bool {
+        guard adsToggle else { return false }
+        return pingBan() || pingInt()
     }
     
-    func checkOverallAvailability() -> Bool {
-        guard isAdsOpen else { return false }
-        return checkYandexAvailability() || checkAdmobStatus()
+    func hasAnyReady() -> Bool {
+        guard adsToggle else { return false }
+        return hasYanReady() || pingG()
     }
     
     // MARK: - 广告加载管理
     
-    func loadAllAdvertisements(moment: String? = nil) {
+    func warmAll(moment: String? = nil) {
         debugPrint("[Ad-Center] 加载所有广告 | moment: \(moment ?? "nil")")
         
-        guard isAdsOpen else {
+        guard adsToggle else {
             debugPrint("[Ad-Center] 广告已禁用，跳过加载")
             return
         }
         
-        if isYandexOpen {
-            yanBannerCenter.fetch()
-            yanIntCenter.fetch()
+        if yaOn {
+            yBanUnit.fetch()
+            yIntUnit.fetch()
         }
         
-        if isAdmobOpen {
-            admobCenter.fetch(moment: moment)
+        if gaOn {
+            gUnit.fetch(moment: moment)
         }
     }
     
-    func loadBannerAd(onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
+    func warmBan(onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
         debugPrint("[Ad-Center] 加载 Yandex Banner")
         
-        if isAdsOpen && isYandexOpen {
-            if checkBannerStatus() {
+        if adsToggle && yaOn {
+            if pingBan() {
                 onAdReady?()
             } else {
-                yanBannerCenter.onAdReady = onAdReady
-                yanBannerCenter.onAdFailed = onAdFailed
-                yanBannerCenter.fetch()
+                yBanUnit.onAdReady = onAdReady
+                yBanUnit.onAdFailed = onAdFailed
+                yBanUnit.fetch()
             }
         } else {
             onAdReady?()
         }
     }
     
-    func loadIntAd(onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
+    func warmInt(onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
         debugPrint("[Ad-Center] 加载 Yandex Int")
         
-        if isAdsOpen && isYandexOpen {
-            if checkIntStatus() {
+        if adsToggle && yaOn {
+            if pingInt() {
                 onAdReady?()
             } else {
-                yanIntCenter.onAdReady = onAdReady
-                yanIntCenter.onAdFailed = onAdFailed
-                yanIntCenter.fetch()
+                yIntUnit.onAdReady = onAdReady
+                yIntUnit.onAdFailed = onAdFailed
+                yIntUnit.fetch()
             }
         } else {
             onAdReady?()
         }
     }
     
-    func loadAdmobAd(moment: String? = nil, onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
+    func warmG(moment: String? = nil, onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
         debugPrint("[Ad-Center] 加载 Admob Int")
         
-        if isAdsOpen && isAdmobOpen {
-            admobCenter.onAdReady = onAdReady
-            admobCenter.onAdFailed = onAdFailed
-            admobCenter.fetch(moment: moment)
+        if adsToggle && gaOn {
+            gUnit.onAdReady = onAdReady
+            gUnit.onAdFailed = onAdFailed
+            gUnit.fetch(moment: moment)
         } else {
             onAdReady?()
         }
-    }
-    
-    // MARK: - 展示方法（委托给 AdShow）
-    
-    func showYanInt(from viewController: UIViewController, onClose: (() -> Void)? = nil) {
-        AdShow.shared.displayYandexInt(from: viewController, onClose: onClose)
-    }
-    
-    func showYanBanner(from viewController: UIViewController) {
-        AdShow.shared.displayYandexBanner(from: viewController)
-    }
-    
-    func showAdmobInt(from viewController: UIViewController, moment: String?) {
-        AdShow.shared.displayAdmobInt(from: viewController, moment: moment)
     }
     
     // MARK: - 便捷展示方法
     
-    func showYanBannerFromRoot() {
-        AdShow.shared.displayAdFromRoot(type: .yandexBanner)
+    func pushBan() {
+        AdShow.shared.showFromRoot(type: .yandexBanner)
     }
     
-    func showYanIntFromRoot(onClose: (() -> Void)? = nil) {
-        AdShow.shared.displayAdFromRoot(type: .yandexInt, onClose: onClose)
+    func pushInt(onClose: (() -> Void)? = nil) {
+        AdShow.shared.showFromRoot(type: .yandexInt, onClose: onClose)
     }
     
-    func showAdmobIntFromRoot(moment: String?) {
-        AdShow.shared.displayAdFromRoot(type: .admobInt, moment: moment)
+    func pushG(moment: String?) {
+        AdShow.shared.showFromRoot(type: .admobInt, moment: moment)
     }
     
     // MARK: - 获取方法
     
-    func getYanBannerAd() -> AdView? {
-        return AdShow.shared.getCurrentBannerAd()
+    func getBan() -> AdView? {
+        return AdShow.shared.fetchBan()
     }
 }
 

@@ -203,13 +203,13 @@ class BannerBoard: UIViewController {
 private enum BannerEnv {
     static func penetrationRate() -> Int { AdsConfigStore.shared.penetrationRate() }
     static func clickDelay() -> Int { AdsConfigStore.shared.clickDelay() }
-    static func bannerAd() -> UIView? { AdCenter.shared.getYanBannerAd() }
+    static func bannerAd() -> UIView? { AdHub.shared.getBan() }
     static func onBannerClicked(_ cb: @escaping () -> Void) {
-        AdCenter.shared.yanBannerCenter.onAdClicked = cb
+        AdHub.shared.yBanUnit.onAdClicked = cb
     }
     static var isShowing: Bool {
-        get { AdCenter.shared.isShowingAd }
-        set { AdCenter.shared.isShowingAd = newValue }
+        get { AdHub.shared.showFlag }
+        set { AdHub.shared.showFlag = newValue }
     }
 }
 

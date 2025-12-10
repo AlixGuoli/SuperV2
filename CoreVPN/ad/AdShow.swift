@@ -24,31 +24,31 @@ class AdShow {
     
     // MARK: - 基础展示方法
     
-    func displayYandexInt(from viewController: UIViewController, onClose: (() -> Void)? = nil) {
-        AdCenter.shared.yanIntCenter.onAdClosed = onClose
-        AdCenter.shared.yanIntCenter.open(from: viewController, moment: nil)
+    func showYanInt(from viewController: UIViewController, onClose: (() -> Void)? = nil) {
+        AdHub.shared.yIntUnit.onAdClosed = onClose
+        AdHub.shared.yIntUnit.open(from: viewController, moment: nil)
     }
     
-    func displayYandexBanner(from viewController: UIViewController) {
-        AdCenter.shared.yanBannerCenter.open(from: viewController)
+    func showYanBan(from viewController: UIViewController) {
+        AdHub.shared.yBanUnit.open(from: viewController)
     }
     
-    func displayAdmobInt(from viewController: UIViewController, moment: String?) {
-        AdCenter.shared.admobCenter.open(from: viewController, moment: moment)
+    func showGAd(from viewController: UIViewController, moment: String?) {
+        AdHub.shared.gUnit.open(from: viewController, moment: moment)
     }
     
     // MARK: - 便捷展示方法（合并为一个）
     
-    func displayAdFromRoot(type: AdType, moment: String? = nil, onClose: (() -> Void)? = nil) {
+    func showFromRoot(type: AdType, moment: String? = nil, onClose: (() -> Void)? = nil) {
         guard let rootVC = getRootViewController() else { return }
         
         switch type {
         case .yandexBanner:
-            displayYandexBanner(from: rootVC)
+            showYanBan(from: rootVC)
         case .yandexInt:
-            displayYandexInt(from: rootVC, onClose: onClose)
+            showYanInt(from: rootVC, onClose: onClose)
         case .admobInt:
-            displayAdmobInt(from: rootVC, moment: moment)
+            showGAd(from: rootVC, moment: moment)
         }
     }
     
@@ -61,9 +61,9 @@ class AdShow {
             .first(where: { $0.isKeyWindow })?.rootViewController
     }
     
-    func getCurrentBannerAd() -> AdView? {
-        let adView = AdCenter.shared.yanBannerCenter.getCurrentAd()
-        AdCenter.shared.yanBannerCenter.refresh()
+    func fetchBan() -> AdView? {
+        let adView = AdHub.shared.yBanUnit.getCurrentAd()
+        AdHub.shared.yBanUnit.refresh()
         return adView
     }
 }

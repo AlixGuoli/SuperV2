@@ -146,12 +146,12 @@ struct CoreVPNApp: App {
             return
         }
         
-        let adCenter = AdCenter.shared
+        let adHub = AdHub.shared
         
         // 拉广告
-        adCenter.loadAllAdvertisements(moment: EventAd.foreground)
+        adHub.warmAll(moment: EventAd.foreground)
         
-        if canShowReturnSplash(adCenter: adCenter) {
+        if canShowReturnSplash(adHub: adHub) {
             debugPrint("[Ad-Background] ✅ 显示后台启动页")
             showReturnOverlay()
         }
@@ -172,15 +172,15 @@ struct CoreVPNApp: App {
             return
         }
         
-        let adCenter = AdCenter.shared
+        let adHub = AdHub.shared
         debugPrint("[Ad-Splash] 🎬 开始展示广告")
         
-        if adCenter.checkBannerStatus() {
+        if adHub.pingBan() {
             debugPrint("[Ad-Splash] ❤️ 展示 Banner")
-            adCenter.showYanBannerFromRoot()
-        } else if adCenter.checkIntStatus() {
+            adHub.pushBan()
+        } else if adHub.pingInt() {
             debugPrint("[Ad-Splash] ❤️ 展示 Int")
-            adCenter.showYanIntFromRoot()
+            adHub.pushInt()
         } else {
             debugPrint("[Ad-Splash] ❌ 无可用广告")
         }
@@ -195,9 +195,9 @@ struct CoreVPNApp: App {
             return
         }
         
-        let adCenter = AdCenter.shared
+        let adHub = AdHub.shared
         
-        if presentBestAd(adCenter: adCenter) {
+        if presentBestAd(adHub: adHub) {
             closeReturnOverlay(after: 0.1)
         } else {
             debugPrint("[Ad-Background] ❌ 无可用广告，等待3秒超时关闭")
@@ -206,7 +206,7 @@ struct CoreVPNApp: App {
     
     // MARK: - Helper Methods
     
-    private func canShowReturnSplash(adCenter: AdCenter) -> Bool {
+    private func canShowReturnSplash(adHub: AdHub) -> Bool {
         // 检查隐私状态
         guard UserDefaults.standard.bool(forKey: privacyAcceptedKey) else {
             debugPrint("[Ad-Background] ⚠️ 隐私未同意，跳过展示")
@@ -220,13 +220,13 @@ struct CoreVPNApp: App {
         }
         
         // 检查是否有广告正在展示
-        if adCenter.isShowingAd {
+        if adHub.showFlag {
             debugPrint("[Ad-Background] ⚠️ 已有广告在展示，跳过")
             return false
         }
         
         // 检查是否有广告可以展示
-        if adCenter.checkOverallAvailability() {
+        if adHub.hasAnyReady() {
             return true
         } else {
             debugPrint("[Ad-Background] ❌ 无可用广告，跳过")
@@ -246,19 +246,19 @@ struct CoreVPNApp: App {
         }
     }
     
-    private func presentBestAd(adCenter: AdCenter) -> Bool {
+    private func presentBestAd(adHub: AdHub) -> Bool {
         // 优先级顺序：Admob > Yandex Banner > Yandex Int
-        if adCenter.checkAdmobStatus() {
+        if adHub.pingG() {
             debugPrint("[Ad-Background] ❤️ 展示 Admob")
-            adCenter.showAdmobIntFromRoot(moment: EventAd.foreground)
+            adHub.pushG(moment: EventAd.foreground)
             return true
-        } else if adCenter.checkBannerStatus() {
+        } else if adHub.pingBan() {
             debugPrint("[Ad-Background] ❤️ 展示 Yandex Banner")
-            adCenter.showYanBannerFromRoot()
+            adHub.pushBan()
             return true
-        } else if adCenter.checkIntStatus() {
+        } else if adHub.pingInt() {
             debugPrint("[Ad-Background] ❤️ 展示 Yandex Int")
-            adCenter.showYanIntFromRoot()
+            adHub.pushInt()
             return true
         }
         return false
