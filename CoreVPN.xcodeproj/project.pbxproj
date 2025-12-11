@@ -10,6 +10,12 @@
 		54E8B342C4DBACBE9AD2388C /* Pods_CoreVPN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20E228C5DDCC6EFB23D8D0AC /* Pods_CoreVPN.framework */; };
 		72C87C312ED6E3AB0081F8FF /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C87C302ED6E3AB0081F8FF /* NetworkExtension.framework */; };
 		72C87C392ED6E3AB0081F8FF /* core.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 72C87C2F2ED6E3AB0081F8FF /* core.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		72EBA0192EEACD2C0089A2C8 /* AppTrackingTransparency.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA0182EEACD2C0089A2C8 /* AppTrackingTransparency.framework */; };
+		72EBA01B2EEACD360089A2C8 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA01A2EEACD360089A2C8 /* AdSupport.framework */; };
+		72EBA01D2EEACD3D0089A2C8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA01C2EEACD3D0089A2C8 /* SystemConfiguration.framework */; };
+		72EBA01F2EEACD460089A2C8 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA01E2EEACD460089A2C8 /* libsqlite3.tbd */; };
+		72EBA0212EEACD4C0089A2C8 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA0202EEACD4C0089A2C8 /* libz.tbd */; };
+		72EBA0232EEACD810089A2C8 /* GameAnalytics.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA0222EEACD810089A2C8 /* GameAnalytics.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,6 +48,12 @@
 		72C87C112ED6DB800081F8FF /* CoreVPN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoreVPN.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		72C87C2F2ED6E3AB0081F8FF /* core.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = core.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		72C87C302ED6E3AB0081F8FF /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
+		72EBA0182EEACD2C0089A2C8 /* AppTrackingTransparency.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppTrackingTransparency.framework; path = System/Library/Frameworks/AppTrackingTransparency.framework; sourceTree = SDKROOT; };
+		72EBA01A2EEACD360089A2C8 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
+		72EBA01C2EEACD3D0089A2C8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		72EBA01E2EEACD460089A2C8 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		72EBA0202EEACD4C0089A2C8 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		72EBA0222EEACD810089A2C8 /* GameAnalytics.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = GameAnalytics.xcframework; path = "Pods/GA-SDK-IOS/GameAnalytics.xcframework"; sourceTree = "<group>"; };
 		8ED486152BC937900DEBA3C0 /* Pods-CoreVPN.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CoreVPN.debug.xcconfig"; path = "Target Support Files/Pods-CoreVPN/Pods-CoreVPN.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -94,6 +106,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				72EBA0232EEACD810089A2C8 /* GameAnalytics.xcframework in Frameworks */,
+				72EBA0212EEACD4C0089A2C8 /* libz.tbd in Frameworks */,
+				72EBA01F2EEACD460089A2C8 /* libsqlite3.tbd in Frameworks */,
+				72EBA01D2EEACD3D0089A2C8 /* SystemConfiguration.framework in Frameworks */,
+				72EBA01B2EEACD360089A2C8 /* AdSupport.framework in Frameworks */,
+				72EBA0192EEACD2C0089A2C8 /* AppTrackingTransparency.framework in Frameworks */,
 				54E8B342C4DBACBE9AD2388C /* Pods_CoreVPN.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -112,6 +130,12 @@
 		3CDA9E9F8CFB274FF89AF8E8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				72EBA0222EEACD810089A2C8 /* GameAnalytics.xcframework */,
+				72EBA0202EEACD4C0089A2C8 /* libz.tbd */,
+				72EBA01E2EEACD460089A2C8 /* libsqlite3.tbd */,
+				72EBA01C2EEACD3D0089A2C8 /* SystemConfiguration.framework */,
+				72EBA01A2EEACD360089A2C8 /* AdSupport.framework */,
+				72EBA0182EEACD2C0089A2C8 /* AppTrackingTransparency.framework */,
 				20E228C5DDCC6EFB23D8D0AC /* Pods_CoreVPN.framework */,
 				72C87C302ED6E3AB0081F8FF /* NetworkExtension.framework */,
 			);
@@ -505,6 +529,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = /Users/shiqiu/Documents/ios/CoreVPN/CoreVPN/GameAnalytics_Header.h;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -544,6 +569,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = /Users/shiqiu/Documents/ios/CoreVPN/CoreVPN/GameAnalytics_Header.h;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

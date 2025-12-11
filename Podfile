@@ -13,4 +13,6 @@ target 'CoreVPN' do
   pod 'YandexMobileAds', '7.18.0'
   pod 'YandexMobileAdsInstream', '0.62.0'
   
+  pod 'GA-SDK-IOS', '~> 4.11.0'
+  
 end

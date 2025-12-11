@@ -81,6 +81,7 @@ PODS:
     - VGSL (~> 7.12)
   - DivKitBinaryCompatibilityFacade (5.2.1):
     - DivKit (~> 32.14)
+  - GA-SDK-IOS (4.11.1)
   - Google-Mobile-Ads-SDK (12.14.0):
     - GoogleUserMessagingPlatform (>= 1.1)
   - GoogleUserMessagingPlatform (3.1.0)
@@ -105,6 +106,7 @@ PODS:
 
 DEPENDENCIES:
   - Alamofire
+  - GA-SDK-IOS (~> 4.11.0)
   - Google-Mobile-Ads-SDK
   - YandexMobileAds (= 7.18.0)
   - YandexMobileAdsInstream (= 0.62.0)
@@ -136,6 +138,7 @@ SPEC REPOS:
     - DivKit_LayoutKitInterface
     - DivKit_Serialization
     - DivKitBinaryCompatibilityFacade
+    - GA-SDK-IOS
     - Google-Mobile-Ads-SDK
     - GoogleUserMessagingPlatform
     - VGSL
@@ -171,6 +174,7 @@ SPEC CHECKSUMS:
   DivKit_LayoutKitInterface: 32af3f50b367cee3e4601e43fb36ec9bf5134b8b
   DivKit_Serialization: fd44604cc134f73202812e098bbca6b10bf63cf3
   DivKitBinaryCompatibilityFacade: 38b84cea43f82129388706b4c25f71519d42a18d
+  GA-SDK-IOS: 81d8ce80f1931823b49c114b9f36f257302ab46f
   Google-Mobile-Ads-SDK: 4534fd2dfcd3f705c5485a6633c5188d03d4eed2
   GoogleUserMessagingPlatform: befe603da6501006420c206222acd449bba45a9c
   VGSL: ea58907772e77ec8569a914a128ad422d33d28de
@@ -180,6 +184,6 @@ SPEC CHECKSUMS:
   YandexMobileAds: fdb8bcd562f25080b0d9ff99384026c868e0baea
   YandexMobileAdsInstream: e14a14163b1e62cb6e4c3918053d5354596f2370
 
-PODFILE CHECKSUM: 206c1694609ca0cfa83c660f2bba5cfbc2322d94
+PODFILE CHECKSUM: 2831d3d724fee1844c564a5a0614960c26eff937
 
 COCOAPODS: 1.16.2
