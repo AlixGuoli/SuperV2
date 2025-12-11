@@ -13,26 +13,19 @@ struct RootTabView: View {
                 }
                 .tag(0)
 
-            NodeListView()
-                .tabItem {
-                    Image(systemName: "globe")
-                    Text("tab_nodes")
-                }
-                .tag(1)
-
             SpeedTestView()
                 .tabItem {
                     Image(systemName: "speedometer")
                     Text("tab_speedtest")
                 }
-                .tag(2)
+                .tag(1)
 
             SettingsView()
                 .tabItem {
                     Image(systemName: "gearshape.fill")
                     Text("tab_settings")
                 }
-                .tag(3)
+                .tag(2)
         }
         .tint(CoreVPNTheme.brandOrange)
         // 语言变化时强制刷新 TabView，避免标题偶尔不更新

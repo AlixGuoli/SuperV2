@@ -3,7 +3,6 @@ import SwiftUI
 struct HomeConnectView: View {
     @EnvironmentObject private var viewModel: TunnelStateManager
     @EnvironmentObject private var nodeStore: NodeSelectionStore
-    @EnvironmentObject private var tabSelection: TabSelection
     @EnvironmentObject private var flowRouter: FlowRouter
     
     @State private var wasConnected = false
@@ -49,8 +48,8 @@ struct HomeConnectView: View {
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    // 跳转到节点 Tab
-                    tabSelection.selectedIndex = 1
+                    // 跳转到节点列表页面
+                    flowRouter.showNodeList()
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
@@ -90,6 +89,8 @@ struct HomeConnectView: View {
                         .blur(radius: 20)
                     
                     Button(action: {
+                        // 将当前节点 ID 传入连接流程（服务配置使用）
+                        viewModel.setSelectedGroup(nodeStore.serviceGroupId)
                         // 仅在发起连接时展示“连接中”页，断开不展示
                         if viewModel.connectionStatus != .connected {
                             viewModel.showFlowConnecting = true  // 由 VM 决定

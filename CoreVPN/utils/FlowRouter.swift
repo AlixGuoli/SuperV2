@@ -11,6 +11,7 @@ import SwiftUI
 enum FlowPage: Hashable {
     case connecting
     case result(ResultType)
+    case nodeList
 }
 
 enum ResultType: Hashable {
@@ -36,6 +37,11 @@ final class FlowRouter: ObservableObject {
     
     func reset() {
         path.removeAll()
+    }
+    
+    func showNodeList() {
+        path.removeAll()
+        path.append(.nodeList)
     }
 }
 

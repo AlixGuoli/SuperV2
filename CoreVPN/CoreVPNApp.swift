@@ -45,6 +45,8 @@ struct CoreVPNApp: App {
                                 ResultView(type: type) {
                                     flowRouter.reset()
                                 }
+                            case .nodeList:
+                                NodeListView()
                             }
                         }
                 }

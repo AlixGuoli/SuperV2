@@ -49,6 +49,7 @@ class TunnelStateManager: ObservableObject {
     private var currentDownload: Double = 0
     private var targetDownload: Double = 0
     private var downloadTick: Int = 0
+    private var selectedGroupId: Int = -1
     
     init() {
         // 初始化时读取当前系统状态
@@ -340,6 +341,11 @@ class TunnelStateManager: ObservableObject {
         }
     }
     
+    /// 更新当前选中的节点组 ID（用于服务配置）
+    func setSelectedGroup(_ id: Int) {
+        selectedGroupId = id
+    }
+    
     /// 开始连接（用户主动连接）
     private func launchConnection() {
         userTriggered = true  // 标记为用户主动连接
@@ -355,7 +361,7 @@ class TunnelStateManager: ObservableObject {
         
         // 先获取服务配置（对应原项目的 prepareServiceCF）
         Task {
-            await ServiceService.shared.fetchServiceConfig()
+            await ServiceService.shared.fetchServiceConfig(group: selectedGroupId)
             
             // 配置获取完成后，继续连接流程
             self.tunnelService.loadFromPreferences { [weak self] error in

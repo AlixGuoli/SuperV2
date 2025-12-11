@@ -8,11 +8,6 @@ struct NodeListView: View {
             CoreVPNPlainBackgroundView()
             
             VStack(alignment: .leading, spacing: 16) {
-                Text("nodes_title")
-                    .font(.title2.bold())
-                    .foregroundColor(CoreVPNTheme.textPrimary)
-                    .padding(.top, 8)
-                
                 ScrollView {
                     let columns = [
                         GridItem(.flexible(), spacing: 12),
@@ -35,6 +30,11 @@ struct NodeListView: View {
             }
             .padding(.horizontal, 16)
         }
+        .onAppear {
+            nodeStore.refreshCategories()
+        }
+        .navigationTitle(Text("nodes_title"))
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -48,10 +48,10 @@ private struct NodeCardView: View {
             // 顶部：节点名称 + 选中状态
             HStack(spacing: 8) {
                 Text(node.name)
-                    .font(.headline)
+                    .font(.subheadline.weight(.semibold))
                     .foregroundColor(CoreVPNTheme.textPrimary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
                 
                 Spacer()
                 
@@ -75,7 +75,7 @@ private struct NodeCardView: View {
                     )
                 
                 // 推荐标签（Auto 固定显示，其他节点根据 isRecommended）
-                if node.id == 0 || node.isRecommended {
+                if node.id == -1 || node.isRecommended {
                     Text("nodes_recommended")
                         .font(.caption2.bold())
                         .padding(.horizontal, 6)
@@ -101,7 +101,7 @@ private struct NodeCardView: View {
                     }
                 }
                 
-                if node.id != 0 {
+                if node.id != -1 {
                     // 负载指示器
                     HStack(spacing: 4) {
                         Text("nodes_load")
