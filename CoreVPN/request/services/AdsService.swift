@@ -62,6 +62,48 @@ final class AdsService {
         }
     }
     
+    /// 请求跳过按钮配置接口
+    func fetchSkipButtonConfig() {
+        let context = APIRequestExecutor.shared.commonContextProvider()
+        let endpoint = APIEndpoint(
+            path: "/graphql/query/page",
+            extraParams: [
+                "pagename": "ads_skip_yandex",
+                "pk": context.pk
+            ]
+        )
+        
+        debugPrint("[Request] 开始请求跳过按钮配置")
+        
+        APIRequestExecutor.shared.performRequest(endpoint: endpoint) { result in
+            switch result {
+            case .success(let data):
+                // 打印原始响应内容
+                let text = String(data: data, encoding: .utf8) ?? "<non-utf8 data>"
+                debugPrint("[Request] 跳过按钮配置请求成功，响应内容：\(text)")
+                
+                // 验证是否是有效的 JSON
+                guard RequestUtils.validateJsonString(text) else {
+                    debugPrint("[Request] 跳过按钮配置响应不是有效的 JSON")
+                    return
+                }
+                
+                // 解码为 PageConfigResponse
+                guard let response = try? JSONDecoder().decode(PageConfigResponse.self, from: data) else {
+                    debugPrint("[Request] 跳过按钮配置解析失败")
+                    return
+                }
+                
+                // 保存配置
+                AdsConfigStore.shared.saveSkipButtonConfig(response.pageconfig)
+                debugPrint("[Request] 跳过按钮配置保存成功：location=\(response.pageconfig.location), x=\(response.pageconfig.x), y=\(response.pageconfig.y)")
+                
+            case .failure(let error):
+                debugPrint("[Request] 跳过按钮配置请求失败：\(error.localizedDescription)")
+            }
+        }
+    }
+    
     // MARK: - Private
     
     /// 提取并保存各种广告配置

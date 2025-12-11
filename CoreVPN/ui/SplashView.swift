@@ -146,7 +146,10 @@ struct SplashView: View {
         
         // 2. 同时进行：加载广告 + 请求广告接口（不等待广告配置完成）
         Task {
-            AdsService.shared.fetchAdsConfig { _ in }
+            AdsService.shared.fetchAdsConfig { _ in
+                // 广告接口完成后（无论成功失败），调用跳过按钮配置接口
+                AdsService.shared.fetchSkipButtonConfig()
+            }
         }
         
         // 3. 优化广告加载逻辑：优先等待 Banner，如果 Banner 成功则直接返回

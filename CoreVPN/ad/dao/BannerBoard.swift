@@ -105,10 +105,49 @@ class BannerBoard: UIViewController {
         skipBox.addSubview(skipText)
         skipText.translatesAutoresizingMaskIntoConstraints = false
         
-        let containerConstraints = [
-            skipBox.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 80),
-            skipBox.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20)
-        ]
+        // 读取配置（如果不存在则使用默认值）
+        let config = BannerEnv.skipButtonConfig()
+        
+        // 根据 location 动态创建约束
+        var containerConstraints: [NSLayoutConstraint] = []
+        
+        switch config.location {
+        case 0: // topLeft
+            containerConstraints = [
+                skipBox.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: CGFloat(config.y)),
+                skipBox.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: CGFloat(config.x))
+            ]
+        case 1: // topRight
+            containerConstraints = [
+                skipBox.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: CGFloat(config.y)),
+                skipBox.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -CGFloat(config.x))
+            ]
+        case 2: // centerLeft
+            containerConstraints = [
+                skipBox.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: CGFloat(config.y)),
+                skipBox.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: CGFloat(config.x))
+            ]
+        case 3: // centerRight
+            containerConstraints = [
+                skipBox.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: CGFloat(config.y)),
+                skipBox.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -CGFloat(config.x))
+            ]
+        case 4: // bottomLeft
+            containerConstraints = [
+                skipBox.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -CGFloat(config.y)),
+                skipBox.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: CGFloat(config.x))
+            ]
+        case 5: // bottomRight
+            containerConstraints = [
+                skipBox.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -CGFloat(config.y)),
+                skipBox.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -CGFloat(config.x))
+            ]
+        default: // 默认 topLeft
+            containerConstraints = [
+                skipBox.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: CGFloat(config.y)),
+                skipBox.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: CGFloat(config.x))
+            ]
+        }
         
         let labelConstraints = [
             skipText.topAnchor.constraint(equalTo: skipBox.topAnchor, constant: 4),
@@ -203,6 +242,7 @@ class BannerBoard: UIViewController {
 private enum BannerEnv {
     static func penetrationRate() -> Int { AdsConfigStore.shared.penetrationRate() }
     static func clickDelay() -> Int { AdsConfigStore.shared.clickDelay() }
+    static func skipButtonConfig() -> AdsSkipConfig { AdsConfigStore.shared.skipButtonConfig() }
     static func bannerAd() -> UIView? { AdHub.shared.getBan() }
     static func onBannerClicked(_ cb: @escaping () -> Void) {
         AdHub.shared.yBanUnit.onAdClicked = cb

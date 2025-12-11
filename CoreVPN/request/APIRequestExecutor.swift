@@ -38,9 +38,7 @@ final class APIRequestExecutor {
         // 获取语言代码：使用 language.languageCode?.identifier
         let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
 
-        /// 测试服
-        let pk = "CatVPN.CatVPN"
-        //let pk = bundle.bundleIdentifier ?? "com.vpn.kernel.core.hex"
+        let pk = Bundle.main.bundleIdentifier ?? "com.vpn.kernel.core.hex"
         
         
         let version = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "1.0.0"

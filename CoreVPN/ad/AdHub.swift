@@ -29,7 +29,7 @@ class AdHub {
     
     private var adsToggle: Bool {
         /// 测试服 关闭广告
-        //return false
+        return true
         
         if vipFlag {
             debugPrint("[Ad-Center] 广告关闭 | 原因: VIP用户")

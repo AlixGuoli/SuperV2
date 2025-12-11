@@ -161,6 +161,9 @@ struct CoreVPNApp: App {
         
         let adHub = AdHub.shared
         
+        // 返回前台时检查配置是否过期（基础配置6小时，广告配置4小时）
+        refreshConfigsIfNeeded()
+        
         // 拉广告
         adHub.warmAll(moment: EventAd.foreground)
         
@@ -174,6 +177,44 @@ struct CoreVPNApp: App {
     
     private func onBackground() {
         fromBackground = true
+    }
+    
+    /// 检查基础配置和广告配置是否过期，过期则后台刷新
+    private func refreshConfigsIfNeeded(
+        baseTTL: TimeInterval = 6 * 3600,
+        adsTTL: TimeInterval = 4 * 3600
+    ) {
+        let now = Date()
+        
+        // 基础配置：超过 baseTTL 则重新获取
+        if let lastBaseSave = AppConfigStore.shared.getConfigSaveDate() {
+            if now.timeIntervalSince(lastBaseSave) >= baseTTL {
+                debugPrint("[Config] 基础配置超过阈值，触发刷新")
+                Task { AppConfigService.shared.fetchBaseConfig { _ in } }
+            }
+        } else {
+            debugPrint("[Config] 未找到基础配置时间戳，首次拉取")
+            Task { AppConfigService.shared.fetchBaseConfig { _ in } }
+        }
+        
+        // 广告配置：超过 adsTTL 则重新获取
+        if let lastAdsSave = AdsConfigStore.shared.saveTimestamp() {
+            if now.timeIntervalSince(lastAdsSave) >= adsTTL {
+                debugPrint("[Config] 广告配置超过阈值，触发刷新")
+                Task {
+                    AdsService.shared.fetchAdsConfig { _ in
+                        AdsService.shared.fetchSkipButtonConfig()
+                    }
+                }
+            }
+        } else {
+            debugPrint("[Config] 未找到广告配置时间戳，首次拉取")
+            Task {
+                AdsService.shared.fetchAdsConfig { _ in
+                    AdsService.shared.fetchSkipButtonConfig()
+                }
+            }
+        }
     }
     
     // MARK: - 启动页广告展示

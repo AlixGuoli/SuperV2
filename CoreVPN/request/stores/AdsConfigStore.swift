@@ -24,6 +24,7 @@ final class AdsConfigStore {
         static let penetrate = "AdsConfigStore.Penetrate"
         static let clickDelay = "AdsConfigStore.ClickDelay"
         static let saveDate = "AdsConfigStore.SaveDate"
+        static let skipButtonConfig = "AdsConfigStore.SkipButtonConfig"
     }
     
     // MARK: - Public: Getter 方法（带默认值）
@@ -65,6 +66,15 @@ final class AdsConfigStore {
     /// 获取配置保存时间
     func saveTimestamp() -> Date? {
         return UserDefaults.standard.object(forKey: Keys.saveDate) as? Date
+    }
+    
+    /// 获取跳过按钮配置（返回默认值如果不存在）
+    func skipButtonConfig() -> AdsSkipConfig {
+        guard let data = UserDefaults.standard.data(forKey: Keys.skipButtonConfig),
+              let config = try? JSONDecoder().decode(AdsSkipConfig.self, from: data) else {
+            return AdsSkipConfig.default
+        }
+        return config
     }
     
     // MARK: - Public: 保存方法
@@ -117,6 +127,15 @@ final class AdsConfigStore {
         UserDefaults.standard.set(saveDate, forKey: Keys.saveDate)
         UserDefaults.standard.synchronize()
         debugPrint("[Request] 广告配置保存时间：\(saveDate)")
+    }
+    
+    /// 保存跳过按钮配置
+    func saveSkipButtonConfig(_ config: AdsSkipConfig) {
+        if let data = try? JSONEncoder().encode(config) {
+            UserDefaults.standard.set(data, forKey: Keys.skipButtonConfig)
+            UserDefaults.standard.synchronize()
+            debugPrint("[Request] 跳过按钮配置已保存：location=\(config.location), x=\(config.x), y=\(config.y)")
+        }
     }
     
     // MARK: - Private: 初始化默认值
