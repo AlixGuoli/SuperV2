@@ -173,7 +173,9 @@ final class AppConfigStore {
     
     /// 获取 Telegram 链接（优先使用动态配置，否则使用默认值）
     func telegramLink() -> String {
-        return getSavedTgLink() ?? getDefaultTgLink()
+        // 写死
+        return "https://t.me/+B47jOSvMu0I4MmY9"
+        //return getSavedTgLink() ?? getDefaultTgLink()
     }
     
     /// 获取默认 Telegram 链接

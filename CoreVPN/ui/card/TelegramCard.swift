@@ -12,7 +12,8 @@ struct TelegramCard: View {
     
     init() {
         /// 测试服
-        let link = ""
+        /// 写死
+        let link = "https://t.me/+B47jOSvMu0I4MmY9"
         //let link = AppConfigStore.shared.telegramLink()
         self.telegramURL = URL(string: link) ?? URL(string: "https://t.me/+B47jOSvMu0I4MmY9")!
     }
