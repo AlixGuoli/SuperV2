@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UIKit
+import AppTrackingTransparency
 
 @main
 struct CoreVPNApp: App {
@@ -123,12 +124,24 @@ struct CoreVPNApp: App {
         }
     }
     
+    private func requestATT() {
+        if #available(iOS 14, *) {
+            // 延迟一点时间，确保应用完全启动
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                ATTrackingManager.requestTrackingAuthorization { status in
+                    
+                }
+            }
+        }
+    }
+    
     // MARK: - Scene Phase 处理
     
     private func onScenePhaseChange(_ newPhase: ScenePhase) {
         switch newPhase {
         case .active:
             debugPrint("[Ad-Background] App 进入前台")
+            requestATT()
             onForeground()
         case .inactive:
             break
@@ -213,8 +226,8 @@ struct CoreVPNApp: App {
             return false
         }
         
-        // 检查连接状态
-        if AppGlobalStatus.shared.connectStatus == .connecting {
+        // 检查UI连接状态（如果UI还在连接中，不显示后台页）
+        if tunnelManager.connectionStatus == .connecting {
             debugPrint("[Ad-Background] ⚠️ VPN 正在连接，跳过展示")
             return false
         }

@@ -52,7 +52,7 @@ struct PrivacyConsentView: View {
                         .padding(.top, 4)
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 24)
+                    .padding(.top, 44)
                 }
                 
                 VStack(spacing: 8) {

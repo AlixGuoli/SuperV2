@@ -486,6 +486,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CoreVPN/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Super V2ray";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "To enhance your experience and optimize our services, we need your consent to track app usage data.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -524,6 +525,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CoreVPN/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Super V2ray";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "To enhance your experience and optimize our services, we need your consent to track app usage data.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
