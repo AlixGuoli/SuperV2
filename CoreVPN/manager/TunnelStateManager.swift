@@ -309,6 +309,10 @@ class TunnelStateManager: ObservableObject {
             flowResult = .disconnectSuccess
             showFlowConnecting = false
             hasEverConnected = false
+        } else if showFlowConnecting {
+            // 连接失败：还在连接页但从未成功连接过，关闭连接页并显示失败结果页
+            showFlowConnecting = false
+            flowResult = .connectFail
         }
         
         // 清理连接相关状态
