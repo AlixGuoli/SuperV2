@@ -97,9 +97,9 @@ struct HomeConnectView: View {
                         // 将当前节点 ID 传入连接流程（服务配置使用）
                         viewModel.setSelectedGroup(nodeStore.serviceGroupId)
                         // 仅在发起连接时展示“连接中”页，断开不展示
-                        if viewModel.connectionStatus != .connected {
-                            viewModel.showFlowConnecting = true  // 由 VM 决定
-                        }
+//                        if viewModel.connectionStatus != .connected {
+//                            viewModel.showFlowConnecting = true  // 由 VM 决定
+//                        }
                         viewModel.toggleConnection()
                     }) {
                         ZStack {

@@ -352,46 +352,52 @@ class TunnelStateManager: ObservableObject {
     
     /// 开始连接（用户主动连接）
     private func launchConnection() {
-        userTriggered = true  // 标记为用户主动连接
-        connectionStatus = .connecting  // 先更新UI状态
-        connectedSince = nil
-        elapsedDisplay = ""
-        stopTimer()
-        showFlowConnecting = true
-        
-        // 生成连接ID并上报连接开始事件
-        connectionId = EventReporter.makeRandomId()
-        EventReporter.shared.sendConnEvent(event: EventReporter.evtStart, sid: connectionId)
-        
-        // 先获取服务配置（对应原项目的 prepareServiceCF）
-        Task {
-            await ServiceService.shared.fetchServiceConfig(group: selectedGroupId)
-            
-            // 配置获取完成后，继续连接流程
-            self.tunnelService.loadFromPreferences { [weak self] error in
+        // 先获取VPN权限（会触发系统权限弹窗），权限成功后再继续连接流程
+        tunnelService.loadFromPreferences { [weak self] error in
             guard let self = self else { return }
             if let error = error {
-                debugPrint("TunnelStateManager: 加载配置失败 - \(error)")
-                self.handleConnectionFailure()
+                debugPrint("TunnelStateManager: 加载配置失败（可能是用户取消了权限）- \(error)")
+                //self.connectionStatus = .failed
                 self.userTriggered = false
                 return
             }
             
-            self.tunnelService.enableAndConfigure { error in
-                if let error = error {
-                    debugPrint("TunnelStateManager: 配置失败 - \(error)")
-                    self.handleConnectionFailure()
-                    self.userTriggered = false
-                    return
-                }
+            // 确认拿到VPN权限后，才设置连接状态
+            debugPrint("TunnelStateManager: VPN权限已获取，开始连接流程")
+            
+            DispatchQueue.main.async {
+                // 立即显示连接页面，给用户反馈，避免重复点击
+                self.showFlowConnecting = true
+                self.connectionStatus = .connecting
+                self.userTriggered = true  // 标记为用户主动连接
+                // 不在这里设置连接状态，等确认拿到VPN权限后再设置
+                self.connectedSince = nil
+                self.elapsedDisplay = ""
+                self.stopTimer()
+            }
+            
+            Task{
+                await ServiceService.shared.fetchServiceConfig(group: self.selectedGroupId)
                 
-                self.tunnelService.startConnection { error in
+                // 生成连接ID并上报连接开始事件
+                self.connectionId = EventReporter.makeRandomId()
+                EventReporter.shared.sendConnEvent(event: EventReporter.evtStart, sid:  self.connectionId)
+                
+                self.tunnelService.enableAndConfigure { error in
                     if let error = error {
-                        debugPrint("TunnelStateManager: 启动连接失败 - \(error)")
+                        debugPrint("TunnelStateManager: 配置失败 - \(error)")
                         self.handleConnectionFailure()
                         self.userTriggered = false
+                        return
                     }
-                    // 成功启动后，等待系统状态变化通知（会触发 updateViewFromSystemState）
+                    
+                    self.tunnelService.startConnection { error in
+                        if let error = error {
+                            debugPrint("TunnelStateManager: 启动连接失败 - \(error)")
+                            self.handleConnectionFailure()
+                            self.userTriggered = false
+                        }
+                        // 成功启动后，等待系统状态变化通知（会触发 updateViewFromSystemState）
                     }
                 }
             }

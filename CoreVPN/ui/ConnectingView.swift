@@ -96,24 +96,8 @@ struct ConnectingView: View {
             
             VStack(spacing: 16) {
                 ReviewCard()
-
-                Button(action: {
-                    onClose()
-                }) {
-                    Text("connecting_close")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(CoreVPNTheme.cardBackground)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .stroke(CoreVPNTheme.brandOrange.opacity(0.2), lineWidth: 1)
-                                )
-                        )
-                        .foregroundColor(CoreVPNTheme.textPrimary)
-                }
+                // 移除关闭按钮，防止用户在连接过程中手动关闭，导致状态不一致
+                // 连接成功/失败后会自动关闭，40秒超时也会自动关闭
             }
             .padding(.bottom, 20)
             
