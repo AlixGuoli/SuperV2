@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct AboutView: View {
     @Environment(\.openURL) private var openURL
@@ -142,11 +143,37 @@ struct AboutView: View {
                     }
                     .padding(.horizontal, 20)
                     
+                    // UUID 显示
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("UID")
+                            .font(.caption)
+                            .foregroundColor(CoreVPNTheme.textSecondary)
+                        Text(getRequestUID())
+                            .font(.caption.monospacedDigit())
+                            .foregroundColor(CoreVPNTheme.textPrimary)
+                            .textSelection(.enabled)
+                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(CoreVPNTheme.cardBackground)
+                    )
+                    .padding(.horizontal, 20)
+                    .onLongPressGesture {
+                        UIPasteboard.general.string = getRequestUID()
+                    }
+                    
                     Spacer(minLength: 20)
                 }
             }
         }
         .navigationTitle(Text("about_title"))
         .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    private func getRequestUID() -> String {
+        return APIRequestExecutor.shared.commonContextProvider().uid
     }
 }
