@@ -372,7 +372,7 @@ class TunnelStateManager: ObservableObject {
             guard let self = self else { return }
             if let error = error {
                 debugPrint("TunnelStateManager: 加载配置失败 - \(error)")
-                self.connectionStatus = .failed
+                self.handleConnectionFailure()
                 self.userTriggered = false
                 return
             }
@@ -380,7 +380,7 @@ class TunnelStateManager: ObservableObject {
             self.tunnelService.enableAndConfigure { error in
                 if let error = error {
                     debugPrint("TunnelStateManager: 配置失败 - \(error)")
-                    self.connectionStatus = .failed
+                    self.handleConnectionFailure()
                     self.userTriggered = false
                     return
                 }
@@ -388,7 +388,7 @@ class TunnelStateManager: ObservableObject {
                 self.tunnelService.startConnection { error in
                     if let error = error {
                         debugPrint("TunnelStateManager: 启动连接失败 - \(error)")
-                        self.connectionStatus = .failed
+                        self.handleConnectionFailure()
                         self.userTriggered = false
                     }
                     // 成功启动后，等待系统状态变化通知（会触发 updateViewFromSystemState）

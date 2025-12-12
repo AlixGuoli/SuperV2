@@ -10,6 +10,8 @@ import SwiftUI
 struct ConnectingView: View {
     let onClose: () -> Void
     
+    @State private var timeoutTask: DispatchWorkItem?
+    
     var body: some View {
         VStack(spacing: 20) {
             Spacer(minLength: 20)
@@ -121,6 +123,22 @@ struct ConnectingView: View {
         .navigationTitle(LocalizedStringKey("connecting_nav_title"))
         .navigationBarBackButtonHidden()
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            debugPrint("[ConnectingView] onAppear - 启动40秒超时计时器")
+            // 启动40秒超时计时器
+            let task = DispatchWorkItem {
+                debugPrint("[ConnectingView] 40秒超时，自动关闭页面")
+                onClose()
+            }
+            timeoutTask = task
+            DispatchQueue.main.asyncAfter(deadline: .now() + 40.0, execute: task)
+        }
+        .onDisappear {
+            debugPrint("[ConnectingView] onDisappear - 页面消失，取消计时器")
+            // 页面消失时取消计时器
+            timeoutTask?.cancel()
+            timeoutTask = nil
+        }
     }
 }
 
