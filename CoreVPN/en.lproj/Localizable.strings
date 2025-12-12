@@ -140,3 +140,7 @@
 "result_connect_fail" = "Connection Failed";
 "result_disconnect_success" = "Disconnected";
 "result_nav_title" = "Result";
+
+"node_switch_alert_title" = "Cannot Switch Node";
+"node_switch_alert_message" = "Please disconnect first before switching nodes.";
+"node_switch_alert_ok" = "OK";

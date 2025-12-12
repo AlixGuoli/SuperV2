@@ -6,6 +6,7 @@ struct HomeConnectView: View {
     @EnvironmentObject private var flowRouter: FlowRouter
     
     @State private var wasConnected = false
+    @State private var showNodeSwitchAlert = false
     
     private var isConnected: Bool {
         viewModel.connectionStatus == .connected
@@ -48,8 +49,12 @@ struct HomeConnectView: View {
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    // 跳转到节点列表页面
-                    flowRouter.showNodeList()
+                    // 如果已连接，显示提示；否则跳转到节点列表页面
+                    if isConnected {
+                        showNodeSwitchAlert = true
+                    } else {
+                        flowRouter.showNodeList()
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
@@ -210,6 +215,11 @@ struct HomeConnectView: View {
                 )
                 .zIndex(1000)
             }
+        }
+        .alert("node_switch_alert_title", isPresented: $showNodeSwitchAlert) {
+            Button("node_switch_alert_ok", role: .cancel) { }
+        } message: {
+            Text("node_switch_alert_message")
         }
         .onChange(of: viewModel.connectionStatus) { newStatus in
             handleStatusChange(newStatus)
