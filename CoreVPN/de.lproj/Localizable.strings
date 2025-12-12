@@ -120,4 +120,28 @@
 "about_feature_nodes" = "Mehrere Regionen für unterschiedliche Netzwerkbedingungen.";
 "about_feature_healthcheck" = "Integrierter Netzwerkcheck, um die aktuelle Qualität zu verstehen.";
 
+"ReviewPrompt_Title" = "Bewerte uns";
+"ReviewPrompt_Body" = "Dein positives Feedback hilft uns, besser zu werden — wir schätzen deine schnelle Bewertung!";
+
+"connecting_title" = "Verbindung wird hergestellt…";
+"connecting_subtitle" = "Bitte warten, wir richten einen sicheren Kanal ein";
+"connecting_close" = "Schließen";
+"connecting_nav_title" = "Verbindung wird hergestellt";
+
+"BannerWaitText" = "Werbung in %ldS überspringen";
+"BannerSkipText" = "Werbung überspringen";
+
+"result_telegram_title" = "Telegram beitreten";
+"result_telegram_subtitle" = "Support und Updates erhalten";
+"result_share_title" = "App teilen";
+"result_share_subtitle" = "Mit Freunden teilen";
+
+"result_connect_success" = "Erfolgreich verbunden";
+"result_connect_fail" = "Verbindung fehlgeschlagen";
+"result_disconnect_success" = "Getrennt";
+"result_nav_title" = "Ergebnis";
+
+"node_switch_alert_title" = "Knoten kann nicht gewechselt werden";
+"node_switch_alert_message" = "Bitte trenne zuerst die Verbindung, bevor du den Knoten wechselst.";
+"node_switch_alert_ok" = "OK";
 

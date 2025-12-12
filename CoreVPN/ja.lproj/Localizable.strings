@@ -120,4 +120,28 @@
 "about_feature_nodes" = "さまざまなネットワーク環境に対応する複数の地域ノード。";
 "about_feature_healthcheck" = "現在の品質を把握できるネットワーク診断機能を内蔵。";
 
+"ReviewPrompt_Title" = "評価をお願いします";
+"ReviewPrompt_Body" = "皆様のご意見が改善につながります — ぜひ評価をお願いします！";
+
+"connecting_title" = "接続中…";
+"connecting_subtitle" = "お待ちください。安全なチャネルを確立しています";
+"connecting_close" = "閉じる";
+"connecting_nav_title" = "接続中";
+
+"BannerWaitText" = "広告を%ld秒後にスキップ";
+"BannerSkipText" = "広告をスキップ";
+
+"result_telegram_title" = "Telegram に参加";
+"result_telegram_subtitle" = "サポートとアップデートを取得";
+"result_share_title" = "アプリを共有";
+"result_share_subtitle" = "友達と共有";
+
+"result_connect_success" = "接続成功";
+"result_connect_fail" = "接続失敗";
+"result_disconnect_success" = "切断されました";
+"result_nav_title" = "結果";
+
+"node_switch_alert_title" = "ノードを切り替えられません";
+"node_switch_alert_message" = "ノードを切り替える前に、まず接続を切断してください。";
+"node_switch_alert_ok" = "OK";
 

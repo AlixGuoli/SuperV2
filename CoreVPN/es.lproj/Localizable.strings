@@ -120,4 +120,28 @@
 "about_feature_nodes" = "Varios regiones para adaptarse a distintas condiciones de red.";
 "about_feature_healthcheck" = "Comprobación de red integrada para conocer la calidad actual.";
 
+"ReviewPrompt_Title" = "Valóranos";
+"ReviewPrompt_Body" = "Tus comentarios positivos nos ayudan a mejorar — ¡agradecemos tu valoración rápida!";
+
+"connecting_title" = "Conectando…";
+"connecting_subtitle" = "Espera, estamos estableciendo un canal seguro";
+"connecting_close" = "Cerrar";
+"connecting_nav_title" = "Conectando";
+
+"BannerWaitText" = "Omitir anuncio en %ld s";
+"BannerSkipText" = "Omitir anuncio";
+
+"result_telegram_title" = "Unirse a Telegram";
+"result_telegram_subtitle" = "Obtener soporte y actualizaciones";
+"result_share_title" = "Compartir app";
+"result_share_subtitle" = "Compartir con amigos";
+
+"result_connect_success" = "Conectado correctamente";
+"result_connect_fail" = "Error de conexión";
+"result_disconnect_success" = "Desconectado";
+"result_nav_title" = "Resultado";
+
+"node_switch_alert_title" = "No se puede cambiar de nodo";
+"node_switch_alert_message" = "Por favor, desconéctate primero antes de cambiar de nodo.";
+"node_switch_alert_ok" = "Aceptar";
 

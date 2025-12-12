@@ -120,4 +120,28 @@
 "about_feature_nodes" = "Plusieurs régions pour s'adapter à différentes conditions réseau.";
 "about_feature_healthcheck" = "Diagnostic réseau intégré pour comprendre la qualité actuelle.";
 
+"ReviewPrompt_Title" = "Notez-nous";
+"ReviewPrompt_Body" = "Vos retours positifs nous aident à nous améliorer — nous apprécions votre évaluation rapide !";
+
+"connecting_title" = "Connexion…";
+"connecting_subtitle" = "Veuillez patienter, nous établissons un canal sécurisé";
+"connecting_close" = "Fermer";
+"connecting_nav_title" = "Connexion";
+
+"BannerWaitText" = "Passer la pub dans %ld s";
+"BannerSkipText" = "Passer la pub";
+
+"result_telegram_title" = "Rejoindre Telegram";
+"result_telegram_subtitle" = "Obtenir de l'aide et des mises à jour";
+"result_share_title" = "Partager l'app";
+"result_share_subtitle" = "Partager avec des amis";
+
+"result_connect_success" = "Connecté avec succès";
+"result_connect_fail" = "Échec de la connexion";
+"result_disconnect_success" = "Déconnecté";
+"result_nav_title" = "Résultat";
+
+"node_switch_alert_title" = "Impossible de changer de nœud";
+"node_switch_alert_message" = "Veuillez d'abord vous déconnecter avant de changer de nœud.";
+"node_switch_alert_ok" = "OK";
 

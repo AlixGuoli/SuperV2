@@ -58,7 +58,7 @@
 "speedtest_ready_hint" = "Tap the button below to run a full network check.";
 "speedtest_button_start" = "Start Check";
 "speedtest_button_running" = "Testing…";
- "speedtest_button_retry" = "Test Again";
+"speedtest_button_retry" = "Test Again";
 
 "speedtest_result_title" = "Result";
 "speedtest_result_poor" = "Your current network is poor. Try another network or test again later.";

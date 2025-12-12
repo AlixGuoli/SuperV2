@@ -120,4 +120,28 @@
 "about_feature_nodes" = "Farklı ağ koşulları için birden fazla bölge düğümü.";
 "about_feature_healthcheck" = "Mevcut kaliteyi anlamaya yardımcı olan yerleşik ağ kontrolü.";
 
+"ReviewPrompt_Title" = "Bizi Değerlendirin";
+"ReviewPrompt_Body" = "Olumlu geri bildirimleriniz gelişmemize yardımcı oluyor — hızlı değerlendirmeniz için teşekkür ederiz!";
+
+"connecting_title" = "Bağlanıyor…";
+"connecting_subtitle" = "Lütfen bekleyin, güvenli bir kanal kuruyoruz";
+"connecting_close" = "Kapat";
+"connecting_nav_title" = "Bağlanıyor";
+
+"BannerWaitText" = "Reklamı %ldS sonra atla";
+"BannerSkipText" = "Reklamı atla";
+
+"result_telegram_title" = "Telegram'a katıl";
+"result_telegram_subtitle" = "Destek ve güncellemeler al";
+"result_share_title" = "Uygulamayı paylaş";
+"result_share_subtitle" = "Arkadaşlarla paylaş";
+
+"result_connect_success" = "Başarıyla Bağlandı";
+"result_connect_fail" = "Bağlantı Başarısız";
+"result_disconnect_success" = "Bağlantı Kesildi";
+"result_nav_title" = "Sonuç";
+
+"node_switch_alert_title" = "Düğüm Değiştirilemez";
+"node_switch_alert_message" = "Lütfen düğümleri değiştirmeden önce önce bağlantıyı kesin.";
+"node_switch_alert_ok" = "Tamam";
 
