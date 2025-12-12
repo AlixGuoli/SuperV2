@@ -32,24 +32,24 @@ final class AdsConfigStore {
     /// 获取 Yandex Banner Key
     func bannerKey() -> String {
         /// 测试服
-        return "demo-banner-yandex"
-        return "aaa;bbb;demo-banner-yandex"
+//        return "demo-banner-yandex"
+//        return "aaa;bbb;demo-banner-yandex"
         return UserDefaults.standard.string(forKey: Keys.yandexBannerKey) ?? "R-M-17936270-1;R-M-17936270-2"
     }
     
     /// 获取 Yandex Int Key
     func intKey() -> String {
         /// 测试服
-        return "demo-interstitial-yandex"
-        return "cc;demo-interstitial-yandex"
+//        return "demo-interstitial-yandex"
+//        return "cc;demo-interstitial-yandex"
         return UserDefaults.standard.string(forKey: Keys.yandexIntKey) ?? "R-M-17936270-3"
     }
     
     /// 获取 AdMob Int Key
     func admobKey() -> String {
         /// 测试服
-        return "ca-app-pub-3940256099942544/4411468910"
-        return "dddd;ca-app-pub-3940256099942544/4411468910"
+//        return "ca-app-pub-3940256099942544/4411468910"
+//        return "dddd;ca-app-pub-3940256099942544/4411468910"
         return UserDefaults.standard.string(forKey: Keys.admobIntKey) ?? "ca-app-pub-4769248627863594/3749236375"
     }
     

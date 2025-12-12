@@ -32,12 +32,14 @@ final class APIRequestExecutor {
 
         // 获取国家代码：使用 region?.identifier，然后 lowercased
         /// 测试服
-        let country = "ru"
-        //let country = (Locale.current.region?.identifier ?? "us").lowercased()
+        //let country = "ru"
+        let country = (Locale.current.region?.identifier ?? "us").lowercased()
 
         // 获取语言代码：使用 language.languageCode?.identifier
         let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
 
+        /// 测试服
+        //let pk = "admobon"
         let pk = Bundle.main.bundleIdentifier ?? "com.vpn.kernel.core.hex"
         
         
