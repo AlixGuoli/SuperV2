@@ -155,7 +155,7 @@ struct SplashView: View {
         // 3. 优化广告加载逻辑：优先等待 Banner，如果 Banner 成功则直接返回
         debugPrint("[Ad-Splash] 🚀 开始加载广告")
         let result = await waitForAds()
-        debugPrint("[Ad-Splash] 广告加载完成 | 结果: \(result ? "成功" : "失败")")
+        debugPrint("[Ad-Splash] 广告加载完成")
         
         return result
     }
@@ -168,7 +168,7 @@ struct SplashView: View {
         // 先等待 Banner 的结果
         let bannerOk = await bannerResult
         if bannerOk {
-            debugPrint("[Ad-Splash] ✅ Banner 加载成功，直接返回")
+            debugPrint("[Ad-Splash] ✅ Banner 执行完成，直接返回")
             return true
         } else {
             debugPrint("[Ad-Splash] ⏳ Banner 失败，等待 Int 结果")
@@ -185,7 +185,7 @@ struct SplashView: View {
                 AdHub.shared.warmBan(onAdReady: {
                     if !resumed {
                         resumed = true
-                        debugPrint("[Ad-Splash] ✅ Banner 加载成功")
+                        debugPrint("[Ad-Splash] ✅ Banner 执行完成")
                         continuation.resume(returning: true)
                     }
                 }, onAdFailed: {
@@ -207,7 +207,7 @@ struct SplashView: View {
                 AdHub.shared.warmInt(onAdReady: {
                     if !resumed {
                         resumed = true
-                        debugPrint("[Ad-Splash] ✅ Int 加载成功")
+                        debugPrint("[Ad-Splash] ✅ Int 执行完成")
                         continuation.resume(returning: true)
                     }
                 }, onAdFailed: {

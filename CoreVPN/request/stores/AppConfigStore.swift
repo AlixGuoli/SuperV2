@@ -221,17 +221,20 @@ final class AppConfigStore {
         }
     }
     
-    /// 获取已保存的广告开关
+    /// 获取已保存的广告开关（没有配置时默认返回 true，广告关闭）
     func getSavedAdsOff() -> Bool? {
         if UserDefaults.standard.object(forKey: Keys.adsOff) != nil {
             return UserDefaults.standard.bool(forKey: Keys.adsOff)
         }
-        return nil
+        return true  // 默认广告关闭
     }
     
-    /// 获取已保存的广告类型
+    /// 获取已保存的广告类型（没有配置时默认返回 "y"，只有 Yandex）
     func getSavedAdsType() -> String? {
-        return UserDefaults.standard.string(forKey: Keys.adsType)
+        if let saved = UserDefaults.standard.string(forKey: Keys.adsType), !saved.isEmpty {
+            return saved
+        }
+        return "y"  // 默认只有 Yandex，Admob 关闭
     }
 }
 

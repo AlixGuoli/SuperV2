@@ -36,17 +36,17 @@ class AdHub {
             return false
         }
         
-        let isAdsOff = Env.cfg.getSavedAdsOff() ?? false
-        let adType = Env.cfg.getSavedAdsType()?.components(separatedBy: ";") ?? []
+        let isAdsOff = Env.cfg.getSavedAdsOff()!
+        let adType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
         
-//        debugPrint("[Ad-Center] 广告开关: \(isAdsOff ? "关闭" : "开启")")
-//        debugPrint("[Ad-Center] 广告类型: \(adType)")
+        debugPrint("[Ad-Center] 广告开关: \(isAdsOff ? "关闭" : "开启")")
+        debugPrint("[Ad-Center] 广告类型: \(adType)")
         
         return !isAdsOff
     }
     
     private var yaOn: Bool {
-        let adType = Env.cfg.getSavedAdsType()?.components(separatedBy: ";") ?? []
+        let adType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
         if adType.contains("y") {
             return true
         }
@@ -55,7 +55,7 @@ class AdHub {
     }
     
     private var gaOn: Bool {
-        let adType = Env.cfg.getSavedAdsType()?.components(separatedBy: ";") ?? []
+        let adType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
         if adType.contains("a") {
             if Env.connectState == .connected {
                 return true
