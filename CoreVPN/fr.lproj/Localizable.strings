@@ -1,0 +1,147 @@
+/* French localization */
+
+"tab_home" = "Accueil";
+"tab_nodes" = "Nœuds";
+"tab_settings" = "Réglages";
+
+"home_current_node_title" = "Nœud actuel";
+"home_button_connect" = "Touchez pour vous connecter";
+"home_button_connecting" = "Connexion…";
+"home_button_connected" = "Connecté";
+
+"home_status_connected_desc" = "Votre trafic est maintenant chiffré via un tunnel sécurisé.";
+"home_status_disconnected_desc" = "Non connecté · votre adresse IP réelle est visible.";
+
+"home_stat_latency" = "Latence";
+"home_stat_download" = "Téléchargement";
+"home_stat_today_usage" = "Aujourd'hui";
+
+"home_footer_tip" = "L'utilisation des données mobiles peut entraîner des frais supplémentaires de votre opérateur.";
+
+"nodes_title" = "Choisissez un nœud";
+"nodes_auto_tag" = "Auto";
+"nodes_recommended" = "Recommandé";
+"nodes_load" = "Charge :";
+
+"settings_section_general" = "Général";
+"settings_about_description" = "Connexion VPN sécurisée pour un usage quotidien.";
+"settings_section_help" = "Aide et support";
+"settings_help_center" = "Aide & FAQ";
+"settings_section_about" = "À propos";
+"settings_about_entry" = "À propos de Super V2ray Tunnel";
+"settings_auto_connect_on_launch" = "Connexion au démarrage";
+"settings_auto_connect_on_wifi" = "Connexion auto en Wi‑Fi";
+"settings_version" = "Version";
+
+"disconnect_confirm_title" = "Déconnecter";
+"disconnect_confirm_message" = "Voulez‑vous vraiment déconnecter le VPN ?";
+"disconnect_confirm_cancel" = "Annuler";
+"disconnect_confirm_confirm" = "Déconnecter";
+
+"settings_language" = "Langue";
+"settings_language_subtitle" = "Langue de l'interface";
+"settings_language_loading" = "Changement de langue…";
+"settings_remember_last_node" = "Mémoriser le dernier nœud";
+
+"settings_section_legal" = "Juridique";
+"settings_privacy_policy" = "Politique de confidentialité";
+"settings_terms_of_service" = "Conditions d'utilisation";
+"tab_speedtest" = "Test";
+"speedtest_title" = "Diagnostic réseau";
+"speedtest_subtitle" = "Vérifiez la qualité actuelle de votre réseau pour améliorer l'expérience au quotidien.";
+"speedtest_phase_idle" = "Prêt";
+"speedtest_phase_ping" = "Mesure de la latence…";
+"speedtest_phase_download" = "Mesure du débit de téléchargement…";
+"speedtest_phase_evaluating" = "Évaluation de la qualité du réseau…";
+"speedtest_phase_finished" = "Terminé";
+
+"speedtest_ready_hint" = "Touchez le bouton ci‑dessous pour lancer un diagnostic complet.";
+"speedtest_button_start" = "Lancer le test";
+"speedtest_button_running" = "Test en cours…";
+"speedtest_button_retry" = "Tester de nouveau";
+
+"speedtest_result_title" = "Résultat";
+"speedtest_result_poor" = "La qualité actuelle du réseau est faible. Essayez un autre réseau ou refaites le test plus tard.";
+"speedtest_result_ok" = "La qualité du réseau est suffisante pour une navigation de base.";
+"speedtest_result_good" = "La qualité du réseau est adaptée au streaming et au jeu en ligne.";
+
+"speedtest_latency" = "Latence";
+"speedtest_download" = "Téléchargement";
+"speedtest_upload" = "Envoi";
+"speedtest_score_format" = "Score global :";
+"speedtest_empty_title" = "Lancer le diagnostic réseau";
+"speedtest_empty_subtitle" = "Comprenez la qualité de votre réseau et optimisez la connexion.";
+"speedtest_button_connect" = "Aller à Connexion";
+"speedtest_suggestion_latency" = "Latence élevée détectée. Essayez de choisir un nœud plus proche.";
+"speedtest_suggestion_download" = "Le débit de téléchargement est faible. Vérifiez votre connexion ou changez de réseau.";
+"speedtest_suggestion_score" = "La qualité du réseau est moyenne. Essayez de changer de nœud ou de refaire le test plus tard.";
+
+"splash_title" = "Super V2ray Tunnel";
+"splash_subtitle" = "Connexion sûre et rapide pour votre quotidien.";
+"splash_loading" = "Préparation de l'environnement sécurisé…";
+
+"privacy_consent_title" = "Avis sur la confidentialité et l'utilisation des données";
+"privacy_consent_preamble" = "Pour offrir une expérience VPN stable, nous collectons uniquement le minimum de données nécessaire au bon fonctionnement du service. Il s'agit principalement :";
+
+"privacy_consent_info_title" = "Informations sur l'appareil :";
+"privacy_consent_info_body" = "Nous traitons des informations de base comme la version du système, le modèle d'appareil et la langue. Cela nous aide à améliorer la stabilité et les performances.";
+
+"privacy_consent_records_title" = "Données de connexion :";
+"privacy_consent_records_body" = "Le comportement de connexion est analysé de manière agrégée et anonyme. Cela nous permet de comprendre les performances du service et d'en améliorer la fiabilité.";
+
+"privacy_consent_duration_title" = "Durée d'utilisation et bande passante :";
+"privacy_consent_duration_body" = "Nous pouvons mesurer la durée des sessions et le volume total de trafic. Ces données servent à planifier la capacité, équilibrer la charge et maintenir la stabilité du service.";
+
+"privacy_consent_ads_title" = "Publicité :";
+"privacy_consent_ads_body" = "Certains partenaires publicitaires tiers peuvent collecter des données selon leurs propres politiques de confidentialité. Ils sont responsables de la façon dont ils traitent ces informations.";
+
+"privacy_consent_footer" = "Pour plus de détails sur la manière dont nous traitons les données, consultez notre politique de confidentialité.";
+"privacy_consent_policy_link" = "Voir la politique de confidentialité";
+"privacy_consent_agree_statement" = "En continuant, vous confirmez avoir lu cet avis et y consentir.";
+"privacy_consent_button_accept" = "Accepter et continuer";
+"privacy_consent_button_decline" = "Quitter l'app";
+
+"help_title" = "Aide & FAQ";
+"help_q1_title" = "Pourquoi je ne peux pas me connecter ?";
+"help_q1_body" = "Vérifiez que votre réseau est disponible, essayez d'alterner entre Wi‑Fi et données mobiles ou choisissez un autre nœud puis réessayez.";
+"help_q2_title" = "La connexion est lente";
+"help_q2_body" = "La vitesse peut être affectée par votre réseau local, la distance jusqu'au nœud ou les heures de pointe. Choisissez une région plus proche et mettez en pause les autres téléchargements.";
+"help_q3_title" = "Mes données sont‑elles enregistrées ?";
+"help_q3_body" = "Les statistiques de connexion sont analysées de manière agrégée et anonyme et sont uniquement utilisées pour maintenir la stabilité du service et en améliorer les performances.";
+"help_q4_title" = "Comment rétablir la connexion après une réinstallation ?";
+"help_q4_body" = "Après avoir réinstallé l'app, ouvrez‑la, autorisez de nouveau le VPN, choisissez un nœud puis touchez « Connecter ».";
+
+"about_title" = "À propos";
+"about_tagline" = "Un VPN simple axé sur une connexion stable et sécurisée.";
+"about_version_prefix" = "Version de l'app";
+"about_made_by" = "Conçu pour un usage quotidien, avec une attention particulière à la confidentialité et à la simplicité.";
+"about_website_button" = "Ouvrir le site web";
+"about_feature_security" = "Aucun journal de contenu ; priorité au tunnel sécurisé.";
+"about_feature_nodes" = "Plusieurs régions pour s'adapter à différentes conditions réseau.";
+"about_feature_healthcheck" = "Diagnostic réseau intégré pour comprendre la qualité actuelle.";
+
+"ReviewPrompt_Title" = "Notez-nous";
+"ReviewPrompt_Body" = "Vos retours positifs nous aident à nous améliorer — nous apprécions votre évaluation rapide !";
+
+"connecting_title" = "Connexion…";
+"connecting_subtitle" = "Veuillez patienter, nous établissons un canal sécurisé";
+"connecting_close" = "Fermer";
+"connecting_nav_title" = "Connexion";
+
+"BannerWaitText" = "Passer la pub dans %ld s";
+"BannerSkipText" = "Passer la pub";
+
+"result_telegram_title" = "Rejoindre Telegram";
+"result_telegram_subtitle" = "Obtenir de l'aide et des mises à jour";
+"result_share_title" = "Partager l'app";
+"result_share_subtitle" = "Partager avec des amis";
+
+"result_connect_success" = "Connecté avec succès";
+"result_connect_fail" = "Échec de la connexion";
+"result_disconnect_success" = "Déconnecté";
+"result_nav_title" = "Résultat";
+
+"node_switch_alert_title" = "Impossible de changer de nœud";
+"node_switch_alert_message" = "Veuillez d'abord vous déconnecter avant de changer de nœud.";
+"node_switch_alert_ok" = "OK";
+

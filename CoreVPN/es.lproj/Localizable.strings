@@ -1,0 +1,147 @@
+/* Spanish localization */
+
+"tab_home" = "Inicio";
+"tab_nodes" = "Nodos";
+"tab_settings" = "Ajustes";
+
+"home_current_node_title" = "Nodo actual";
+"home_button_connect" = "Toca para conectar";
+"home_button_connecting" = "Conectando…";
+"home_button_connected" = "Conectado";
+
+"home_status_connected_desc" = "Tu tráfico ahora se cifra a través de un túnel seguro.";
+"home_status_disconnected_desc" = "Sin conexión · tu IP real está expuesta.";
+
+"home_stat_latency" = "Latencia";
+"home_stat_download" = "Descarga";
+"home_stat_today_usage" = "Hoy";
+
+"home_footer_tip" = "El uso de datos móviles puede generar cargos adicionales de tu operador.";
+
+"nodes_title" = "Elige un nodo";
+"nodes_auto_tag" = "Auto";
+"nodes_recommended" = "Recomendado";
+"nodes_load" = "Carga:";
+
+"settings_section_general" = "General";
+"settings_about_description" = "Conexión VPN segura para el uso diario.";
+"settings_section_help" = "Ayuda y soporte";
+"settings_help_center" = "Ayuda y FAQ";
+"settings_section_about" = "Acerca de";
+"settings_about_entry" = "Acerca de Super V2ray Tunnel";
+"settings_auto_connect_on_launch" = "Conectar al iniciar";
+"settings_auto_connect_on_wifi" = "Auto conectar en Wi‑Fi";
+"settings_version" = "Versión";
+
+"disconnect_confirm_title" = "Desconectar";
+"disconnect_confirm_message" = "¿Seguro que quieres desconectar la VPN?";
+"disconnect_confirm_cancel" = "Cancelar";
+"disconnect_confirm_confirm" = "Desconectar";
+
+"settings_language" = "Idioma";
+"settings_language_subtitle" = "Idioma de la interfaz";
+"settings_language_loading" = "Cambiando idioma…";
+"settings_remember_last_node" = "Recordar último nodo";
+
+"settings_section_legal" = "Legal";
+"settings_privacy_policy" = "Política de privacidad";
+"settings_terms_of_service" = "Términos de uso";
+"tab_speedtest" = "Prueba";
+"speedtest_title" = "Comprobación de red";
+"speedtest_subtitle" = "Comprueba la calidad actual de tu red para mejorar la experiencia diaria.";
+"speedtest_phase_idle" = "Listo";
+"speedtest_phase_ping" = "Midiendo latencia…";
+"speedtest_phase_download" = "Midiendo velocidad de descarga…";
+"speedtest_phase_evaluating" = "Evaluando la calidad de la red…";
+"speedtest_phase_finished" = "Completado";
+
+"speedtest_ready_hint" = "Toca el botón de abajo para ejecutar una comprobación completa.";
+"speedtest_button_start" = "Iniciar prueba";
+"speedtest_button_running" = "Probando…";
+"speedtest_button_retry" = "Probar de nuevo";
+
+"speedtest_result_title" = "Resultado";
+"speedtest_result_poor" = "La calidad actual de la red es baja. Prueba otra red o repite la prueba más tarde.";
+"speedtest_result_ok" = "La calidad de la red es suficiente para una navegación básica.";
+"speedtest_result_good" = "La calidad de la red es adecuada para streaming y juegos.";
+
+"speedtest_latency" = "Latencia";
+"speedtest_download" = "Descarga";
+"speedtest_upload" = "Subida";
+"speedtest_score_format" = "Puntuación general:";
+"speedtest_empty_title" = "Iniciar comprobación de red";
+"speedtest_empty_subtitle" = "Conoce la calidad de tu red y optimiza la conexión.";
+"speedtest_button_connect" = "Ir a conectar";
+"speedtest_suggestion_latency" = "Se ha detectado alta latencia. Prueba a elegir un nodo más cercano.";
+"speedtest_suggestion_download" = "La velocidad de descarga es baja. Revisa tu conexión o cambia de red.";
+"speedtest_suggestion_score" = "La calidad de la red es media. Prueba a cambiar de nodo o repetir la prueba más tarde.";
+
+"splash_title" = "Super V2ray Tunnel";
+"splash_subtitle" = "Conexión segura y rápida para tu día a día.";
+"splash_loading" = "Preparando entorno seguro…";
+
+"privacy_consent_title" = "Aviso sobre privacidad y uso de datos";
+"privacy_consent_preamble" = "Para ofrecer una experiencia VPN estable, solo recopilamos la mínima información necesaria para que el servicio funcione correctamente. Principalmente incluye:";
+
+"privacy_consent_info_title" = "Información del dispositivo:";
+"privacy_consent_info_body" = "Procesamos datos básicos del dispositivo como la versión del sistema, el modelo de hardware y el idioma. Esto nos ayuda a optimizar el rendimiento y la estabilidad.";
+
+"privacy_consent_records_title" = "Datos de conexión:";
+"privacy_consent_records_body" = "El comportamiento de conexión se analiza de forma agregada y anónima. Esto nos permite entender el rendimiento del servicio en distintas redes y mejorar la fiabilidad.";
+
+"privacy_consent_duration_title" = "Tiempo de uso y ancho de banda:";
+"privacy_consent_duration_body" = "Podemos medir la duración de las sesiones y el volumen total de tráfico. Esta información se utiliza para planificar capacidad, equilibrar carga y mantener el servicio estable.";
+
+"privacy_consent_ads_title" = "Publicidad:";
+"privacy_consent_ads_body" = "Algunos proveedores de publicidad de terceros pueden recopilar datos bajo sus propias políticas de privacidad. Ellos son responsables de cómo gestionan esa información.";
+
+"privacy_consent_footer" = "Para más detalles sobre cómo tratamos los datos, revisa nuestra Política de privacidad.";
+"privacy_consent_policy_link" = "Ver política de privacidad";
+"privacy_consent_agree_statement" = "Al continuar, confirmas que has leído este aviso y estás de acuerdo.";
+"privacy_consent_button_accept" = "Aceptar y continuar";
+"privacy_consent_button_decline" = "Salir de la app";
+
+"help_title" = "Ayuda y FAQ";
+"help_q1_title" = "¿Por qué no puedo conectarme?";
+"help_q1_body" = "Comprueba que tu red esté disponible, prueba a cambiar entre Wi‑Fi y datos móviles o elige otro nodo y vuelve a intentarlo.";
+"help_q2_title" = "La conexión es lenta";
+"help_q2_body" = "La velocidad puede verse afectada por tu red local, la distancia al nodo o las horas punta. Prueba a elegir una región más cercana y pausar otras descargas.";
+"help_q3_title" = "¿Se registran mis datos?";
+"help_q3_body" = "Las estadísticas de conexión se analizan de forma agregada y anónima y solo se usan para mantener la estabilidad del servicio y mejorar el rendimiento.";
+"help_q4_title" = "¿Cómo restauro la conexión tras reinstalar?";
+"help_q4_body" = "Después de reinstalar la app, ábrela, vuelve a conceder el permiso VPN, selecciona un nodo y toca «Conectar».";
+
+"about_title" = "Acerca de";
+"about_tagline" = "Un VPN sencillo centrado en una conexión estable y segura.";
+"about_version_prefix" = "Versión de la app";
+"about_made_by" = "Diseñado para el uso diario, con atención a la privacidad y la sencillez.";
+"about_website_button" = "Abrir sitio web";
+"about_feature_security" = "Sin registros de contenido; centrado en el túnel seguro.";
+"about_feature_nodes" = "Varios regiones para adaptarse a distintas condiciones de red.";
+"about_feature_healthcheck" = "Comprobación de red integrada para conocer la calidad actual.";
+
+"ReviewPrompt_Title" = "Valóranos";
+"ReviewPrompt_Body" = "Tus comentarios positivos nos ayudan a mejorar — ¡agradecemos tu valoración rápida!";
+
+"connecting_title" = "Conectando…";
+"connecting_subtitle" = "Espera, estamos estableciendo un canal seguro";
+"connecting_close" = "Cerrar";
+"connecting_nav_title" = "Conectando";
+
+"BannerWaitText" = "Omitir anuncio en %ld s";
+"BannerSkipText" = "Omitir anuncio";
+
+"result_telegram_title" = "Unirse a Telegram";
+"result_telegram_subtitle" = "Obtener soporte y actualizaciones";
+"result_share_title" = "Compartir app";
+"result_share_subtitle" = "Compartir con amigos";
+
+"result_connect_success" = "Conectado correctamente";
+"result_connect_fail" = "Error de conexión";
+"result_disconnect_success" = "Desconectado";
+"result_nav_title" = "Resultado";
+
+"node_switch_alert_title" = "No se puede cambiar de nodo";
+"node_switch_alert_message" = "Por favor, desconéctate primero antes de cambiar de nodo.";
+"node_switch_alert_ok" = "Aceptar";
+

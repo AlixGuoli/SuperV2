@@ -1,0 +1,685 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		54E8B342C4DBACBE9AD2388C /* Pods_CoreVPN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20E228C5DDCC6EFB23D8D0AC /* Pods_CoreVPN.framework */; };
+		72C87C312ED6E3AB0081F8FF /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C87C302ED6E3AB0081F8FF /* NetworkExtension.framework */; };
+		72C87C392ED6E3AB0081F8FF /* core.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 72C87C2F2ED6E3AB0081F8FF /* core.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		72EBA0192EEACD2C0089A2C8 /* AppTrackingTransparency.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA0182EEACD2C0089A2C8 /* AppTrackingTransparency.framework */; };
+		72EBA01B2EEACD360089A2C8 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA01A2EEACD360089A2C8 /* AdSupport.framework */; };
+		72EBA01D2EEACD3D0089A2C8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA01C2EEACD3D0089A2C8 /* SystemConfiguration.framework */; };
+		72EBA01F2EEACD460089A2C8 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA01E2EEACD460089A2C8 /* libsqlite3.tbd */; };
+		72EBA0212EEACD4C0089A2C8 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA0202EEACD4C0089A2C8 /* libz.tbd */; };
+		72EBA0232EEACD810089A2C8 /* GameAnalytics.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBA0222EEACD810089A2C8 /* GameAnalytics.xcframework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		72C87C372ED6E3AB0081F8FF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 72C87C092ED6DB800081F8FF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 72C87C2E2ED6E3AB0081F8FF;
+			remoteInfo = core;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		72C87C3E2ED6E3AB0081F8FF /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				72C87C392ED6E3AB0081F8FF /* core.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		20E228C5DDCC6EFB23D8D0AC /* Pods_CoreVPN.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CoreVPN.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5148DA9053F30BF5EFA345A4 /* Pods-CoreVPN.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CoreVPN.release.xcconfig"; path = "Target Support Files/Pods-CoreVPN/Pods-CoreVPN.release.xcconfig"; sourceTree = "<group>"; };
+		72C87C112ED6DB800081F8FF /* CoreVPN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoreVPN.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		72C87C2F2ED6E3AB0081F8FF /* core.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = core.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		72C87C302ED6E3AB0081F8FF /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
+		72EBA0182EEACD2C0089A2C8 /* AppTrackingTransparency.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppTrackingTransparency.framework; path = System/Library/Frameworks/AppTrackingTransparency.framework; sourceTree = SDKROOT; };
+		72EBA01A2EEACD360089A2C8 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
+		72EBA01C2EEACD3D0089A2C8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		72EBA01E2EEACD460089A2C8 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		72EBA0202EEACD4C0089A2C8 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		72EBA0222EEACD810089A2C8 /* GameAnalytics.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = GameAnalytics.xcframework; path = "Pods/GA-SDK-IOS/GameAnalytics.xcframework"; sourceTree = "<group>"; };
+		8ED486152BC937900DEBA3C0 /* Pods-CoreVPN.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CoreVPN.debug.xcconfig"; path = "Target Support Files/Pods-CoreVPN/Pods-CoreVPN.debug.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		72C87C3A2ED6E3AB0081F8FF /* Exceptions for "core" folder in "core" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 72C87C2E2ED6E3AB0081F8FF /* core */;
+		};
+		72EB9DAC2EE67B6E0089A2C8 /* Exceptions for "CoreVPN" folder in "core" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				vpn/SharedConfig.swift,
+			);
+			target = 72C87C2E2ED6E3AB0081F8FF /* core */;
+		};
+		72EB9E312EE6F8AA0089A2C8 /* Exceptions for "CoreVPN" folder in "CoreVPN" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 72C87C102ED6DB800081F8FF /* CoreVPN */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		72C87C132ED6DB800081F8FF /* CoreVPN */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				72EB9E312EE6F8AA0089A2C8 /* Exceptions for "CoreVPN" folder in "CoreVPN" target */,
+				72EB9DAC2EE67B6E0089A2C8 /* Exceptions for "CoreVPN" folder in "core" target */,
+			);
+			path = CoreVPN;
+			sourceTree = "<group>";
+		};
+		72C87C322ED6E3AB0081F8FF /* core */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				72C87C3A2ED6E3AB0081F8FF /* Exceptions for "core" folder in "core" target */,
+			);
+			path = core;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		72C87C0E2ED6DB800081F8FF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				72EBA0232EEACD810089A2C8 /* GameAnalytics.xcframework in Frameworks */,
+				72EBA0212EEACD4C0089A2C8 /* libz.tbd in Frameworks */,
+				72EBA01F2EEACD460089A2C8 /* libsqlite3.tbd in Frameworks */,
+				72EBA01D2EEACD3D0089A2C8 /* SystemConfiguration.framework in Frameworks */,
+				72EBA01B2EEACD360089A2C8 /* AdSupport.framework in Frameworks */,
+				72EBA0192EEACD2C0089A2C8 /* AppTrackingTransparency.framework in Frameworks */,
+				54E8B342C4DBACBE9AD2388C /* Pods_CoreVPN.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		72C87C2C2ED6E3AB0081F8FF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				72C87C312ED6E3AB0081F8FF /* NetworkExtension.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3CDA9E9F8CFB274FF89AF8E8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				72EBA0222EEACD810089A2C8 /* GameAnalytics.xcframework */,
+				72EBA0202EEACD4C0089A2C8 /* libz.tbd */,
+				72EBA01E2EEACD460089A2C8 /* libsqlite3.tbd */,
+				72EBA01C2EEACD3D0089A2C8 /* SystemConfiguration.framework */,
+				72EBA01A2EEACD360089A2C8 /* AdSupport.framework */,
+				72EBA0182EEACD2C0089A2C8 /* AppTrackingTransparency.framework */,
+				20E228C5DDCC6EFB23D8D0AC /* Pods_CoreVPN.framework */,
+				72C87C302ED6E3AB0081F8FF /* NetworkExtension.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		72C87C082ED6DB800081F8FF = {
+			isa = PBXGroup;
+			children = (
+				72C87C132ED6DB800081F8FF /* CoreVPN */,
+				72C87C322ED6E3AB0081F8FF /* core */,
+				72C87C122ED6DB800081F8FF /* Products */,
+				FE75B71BE98901CAAA2EF3BE /* Pods */,
+				3CDA9E9F8CFB274FF89AF8E8 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		72C87C122ED6DB800081F8FF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				72C87C112ED6DB800081F8FF /* CoreVPN.app */,
+				72C87C2F2ED6E3AB0081F8FF /* core.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FE75B71BE98901CAAA2EF3BE /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				8ED486152BC937900DEBA3C0 /* Pods-CoreVPN.debug.xcconfig */,
+				5148DA9053F30BF5EFA345A4 /* Pods-CoreVPN.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		72C87C102ED6DB800081F8FF /* CoreVPN */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 72C87C1C2ED6DB810081F8FF /* Build configuration list for PBXNativeTarget "CoreVPN" */;
+			buildPhases = (
+				04D5DF099DB7BD05CB23AE7B /* [CP] Check Pods Manifest.lock */,
+				72C87C0D2ED6DB800081F8FF /* Sources */,
+				72C87C0E2ED6DB800081F8FF /* Frameworks */,
+				72C87C0F2ED6DB800081F8FF /* Resources */,
+				6BC66CAF932B833786C70619 /* [CP] Embed Pods Frameworks */,
+				72C87C3E2ED6E3AB0081F8FF /* Embed Foundation Extensions */,
+				D9C0A28AB2BA5EA43D7A904B /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				72C87C382ED6E3AB0081F8FF /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				72C87C132ED6DB800081F8FF /* CoreVPN */,
+			);
+			name = CoreVPN;
+			productName = CoreVPN;
+			productReference = 72C87C112ED6DB800081F8FF /* CoreVPN.app */;
+			productType = "com.apple.product-type.application";
+		};
+		72C87C2E2ED6E3AB0081F8FF /* core */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 72C87C3B2ED6E3AB0081F8FF /* Build configuration list for PBXNativeTarget "core" */;
+			buildPhases = (
+				72C87C2B2ED6E3AB0081F8FF /* Sources */,
+				72C87C2C2ED6E3AB0081F8FF /* Frameworks */,
+				72C87C2D2ED6E3AB0081F8FF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				72C87C322ED6E3AB0081F8FF /* core */,
+			);
+			name = core;
+			productName = core;
+			productReference = 72C87C2F2ED6E3AB0081F8FF /* core.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		72C87C092ED6DB800081F8FF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					72C87C102ED6DB800081F8FF = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					72C87C2E2ED6E3AB0081F8FF = {
+						CreatedOnToolsVersion = 16.4;
+					};
+				};
+			};
+			buildConfigurationList = 72C87C0C2ED6DB800081F8FF /* Build configuration list for PBXProject "CoreVPN" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				ru,
+				es,
+				de,
+				fr,
+				ko,
+				ja,
+				tr,
+			);
+			mainGroup = 72C87C082ED6DB800081F8FF;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 72C87C122ED6DB800081F8FF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				72C87C102ED6DB800081F8FF /* CoreVPN */,
+				72C87C2E2ED6E3AB0081F8FF /* core */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		72C87C0F2ED6DB800081F8FF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		72C87C2D2ED6E3AB0081F8FF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		04D5DF099DB7BD05CB23AE7B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-CoreVPN-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		6BC66CAF932B833786C70619 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CoreVPN/Pods-CoreVPN-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CoreVPN/Pods-CoreVPN-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CoreVPN/Pods-CoreVPN-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D9C0A28AB2BA5EA43D7A904B /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CoreVPN/Pods-CoreVPN-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CoreVPN/Pods-CoreVPN-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CoreVPN/Pods-CoreVPN-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		72C87C0D2ED6DB800081F8FF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		72C87C2B2ED6E3AB0081F8FF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		72C87C382ED6E3AB0081F8FF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 72C87C2E2ED6E3AB0081F8FF /* core */;
+			targetProxy = 72C87C372ED6E3AB0081F8FF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		72C87C1A2ED6DB810081F8FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = H6342D9NUT;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		72C87C1B2ED6DB810081F8FF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = H6342D9NUT;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		72C87C1D2ED6DB810081F8FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8ED486152BC937900DEBA3C0 /* Pods-CoreVPN.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = CoreVPN/CoreVPN.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H6342D9NUT;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CoreVPN/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Super V2ray";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "To enhance your experience and optimize our services, we need your consent to track app usage data.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vpn.kernel.core.hex;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = /Users/shiqiu/Documents/ios/CoreVPN/CoreVPN/GameAnalytics_Header.h;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		72C87C1E2ED6DB810081F8FF /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5148DA9053F30BF5EFA345A4 /* Pods-CoreVPN.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = CoreVPN/CoreVPN.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H6342D9NUT;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CoreVPN/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Super V2ray";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "To enhance your experience and optimize our services, we need your consent to track app usage data.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vpn.kernel.core.hex;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = /Users/shiqiu/Documents/ios/CoreVPN/CoreVPN/GameAnalytics_Header.h;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		72C87C3C2ED6E3AB0081F8FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = core/core.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H6342D9NUT;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = core/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = core;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/core",
+				);
+				MARKETING_VERSION = 1.0.2;
+				OTHER_LDFLAGS = "-lresolv";
+				PRODUCT_BUNDLE_IDENTIFIER = com.vpn.kernel.core.hex.tunnel;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "/Users/shiqiu/Documents/ios/CoreVPN/core/Core-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		72C87C3D2ED6E3AB0081F8FF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = core/core.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H6342D9NUT;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = core/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = core;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/core",
+				);
+				MARKETING_VERSION = 1.0.2;
+				OTHER_LDFLAGS = "-lresolv";
+				PRODUCT_BUNDLE_IDENTIFIER = com.vpn.kernel.core.hex.tunnel;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "/Users/shiqiu/Documents/ios/CoreVPN/core/Core-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		72C87C0C2ED6DB800081F8FF /* Build configuration list for PBXProject "CoreVPN" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72C87C1A2ED6DB810081F8FF /* Debug */,
+				72C87C1B2ED6DB810081F8FF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		72C87C1C2ED6DB810081F8FF /* Build configuration list for PBXNativeTarget "CoreVPN" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72C87C1D2ED6DB810081F8FF /* Debug */,
+				72C87C1E2ED6DB810081F8FF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		72C87C3B2ED6E3AB0081F8FF /* Build configuration list for PBXNativeTarget "core" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72C87C3C2ED6E3AB0081F8FF /* Debug */,
+				72C87C3D2ED6E3AB0081F8FF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 72C87C092ED6DB800081F8FF /* Project object */;
+}
