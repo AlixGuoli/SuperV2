@@ -115,7 +115,11 @@ class YanEMSlotHub: NSObject {
         if isLoading {
             guard let startTime = loadStartAt else { return false }
             let elapsedTime = Date().timeIntervalSince(startTime)
-            return elapsedTime > YanEMEnv.timeout
+            if elapsedTime > YanEMEnv.timeout {
+                debugPrint("[Ad-YanEMInt] ⚠️ 检测到加载超时 (\(Int(elapsedTime))秒 > \(Int(YanEMEnv.timeout))秒)，允许重新加载")
+                return true
+            }
+            return false
         }
         return true
     }

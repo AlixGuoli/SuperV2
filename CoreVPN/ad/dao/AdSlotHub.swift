@@ -18,6 +18,9 @@ class AdSlotHub: NSObject {
     private var adUnitIndex = 0
     private var loadStartAt: Date?
     
+    /// 控制展示后是否自动重新加载（断开连接时设为 false）
+    var shouldReloadAfterShow: Bool = true
+    
     var onAdReady: (() -> Void)?
     var onAdFailed: (() -> Void)?
     var onAdClicked: (() -> Void)?
@@ -37,6 +40,12 @@ class AdSlotHub: NSObject {
     func open(from viewController: UIViewController, moment: String?) {
         guard let activeAd = cachedAd else {
             return
+        }
+        
+        // 如果是断开连接时的广告，展示后不重新加载
+        if moment == "disconnect" {
+            shouldReloadAfterShow = false
+            debugPrint("[Ad-Admob] 断开连接广告，展示后不重新加载")
         }
         
         let adKeyId = activeAd.adUnitID
@@ -149,7 +158,14 @@ extension AdSlotHub: FullScreenContentDelegate {
         AdDeps.isShowing = true
         showingAd = cachedAd
         cachedAd = nil
-        reload(moment: EventAd.closead)
+        
+        // 检查是否允许重新加载
+        if shouldReloadAfterShow {
+            reload(moment: EventAd.closead)
+        } else {
+            debugPrint("[Ad-Admob] 禁止重新加载（断开连接中）")
+            shouldReloadAfterShow = true  // 重置标志
+        }
     }
     
     func adDidRecordImpression(_ ad: FullScreenPresentingAd) {

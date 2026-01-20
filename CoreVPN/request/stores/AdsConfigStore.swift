@@ -50,7 +50,7 @@ final class AdsConfigStore {
     func emIntKey() -> String {
         /// 测试服
         //return "demo-interstitial-yandex"
-        return UserDefaults.standard.string(forKey: Keys.yandexEMIntKey) ?? ""
+        return UserDefaults.standard.string(forKey: Keys.yandexEMIntKey) ?? "R-M-18478236-1"
     }
     
     /// 获取 AdMob Int Key
