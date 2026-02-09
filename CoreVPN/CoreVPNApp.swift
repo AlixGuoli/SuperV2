@@ -231,9 +231,9 @@ struct CoreVPNApp: App {
         let adHub = AdHub.shared
         debugPrint("[Ad-Splash] 🎬 开始展示广告")
         
-        if adHub.pingBan() {
-            debugPrint("[Ad-Splash] ❤️ 展示 Banner")
-            adHub.pushBan()
+        if adHub.pingG() {
+            debugPrint("[Ad-Splash] ❤️ 展示 Admob")
+            adHub.pushG(moment: EventAd.foreground)
         } else if adHub.pingInt() {
             debugPrint("[Ad-Splash] ❤️ 展示 Int")
             adHub.pushInt()
@@ -303,14 +303,10 @@ struct CoreVPNApp: App {
     }
     
     private func presentBestAd(adHub: AdHub) -> Bool {
-        // 优先级顺序：Admob > Yandex Banner > Yandex Int
+        // 优先级顺序：Admob > Yandex Int（已去掉 Banner）
         if adHub.pingG() {
             debugPrint("[Ad-Background] ❤️ 展示 Admob")
             adHub.pushG(moment: EventAd.foreground)
-            return true
-        } else if adHub.pingBan() {
-            debugPrint("[Ad-Background] ❤️ 展示 Yandex Banner")
-            adHub.pushBan()
             return true
         } else if adHub.pingInt() {
             debugPrint("[Ad-Background] ❤️ 展示 Yandex Int")

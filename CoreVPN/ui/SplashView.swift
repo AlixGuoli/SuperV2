@@ -152,51 +152,12 @@ struct SplashView: View {
             }
         }
         
-        // 3. 优化广告加载逻辑：优先等待 Banner，如果 Banner 成功则直接返回
+        // 3. 广告加载：仅等待 Int（已去掉 Banner）
         debugPrint("[Ad-Splash] 🚀 开始加载广告")
-        let result = await waitForAds()
+        let result = await fetchInt()
         debugPrint("[Ad-Splash] 广告加载完成")
         
         return result
-    }
-    
-    private func waitForAds() async -> Bool {
-        // 同时开始加载两个广告
-        async let bannerResult = fetchBanner()
-        async let intResult = fetchInt()
-        
-        // 先等待 Banner 的结果
-        let bannerOk = await bannerResult
-        if bannerOk {
-            debugPrint("[Ad-Splash] ✅ Banner 执行完成，直接返回")
-            return true
-        } else {
-            debugPrint("[Ad-Splash] ⏳ Banner 失败，等待 Int 结果")
-            let intOk = await intResult
-            return intOk
-        }
-    }
-    
-    private func fetchBanner() async -> Bool {
-        return await withCheckedContinuation { continuation in
-            DispatchQueue.main.async {
-                var resumed = false
-                
-                AdHub.shared.warmBan(onAdReady: {
-                    if !resumed {
-                        resumed = true
-                        debugPrint("[Ad-Splash] ✅ Banner 执行完成")
-                        continuation.resume(returning: true)
-                    }
-                }, onAdFailed: {
-                    if !resumed {
-                        resumed = true
-                        debugPrint("[Ad-Splash] ❌ Banner 加载失败")
-                        continuation.resume(returning: false)
-                    }
-                })
-            }
-        }
     }
     
     private func fetchInt() async -> Bool {

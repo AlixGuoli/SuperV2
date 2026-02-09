@@ -279,11 +279,9 @@ struct HomeConnectView: View {
             return
         }
         
-        // 按优先级展示广告：Admob > Yandex Banner > Yandex Int
+        // 按优先级展示广告：Admob > Yandex Int（已去掉 Banner）
         if adHub.pingG() {
             adHub.pushG(moment: moment)
-        } else if adHub.pingBan() {
-            adHub.pushBan()
         } else if adHub.pingInt() {
             adHub.pushInt()
         }

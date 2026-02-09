@@ -64,6 +64,12 @@ class AdHub {
         return false
     }
     
+    /// e 独立：有 "e" 就是 EM，不管有没有 "y"
+    private var emOn: Bool {
+        let adType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
+        return adType.contains("e")
+    }
+    
     private init() {
         vipFlag = UserPrefs.isPremium
     }
@@ -75,12 +81,10 @@ class AdHub {
     }
     
     func pingInt() -> Bool {
-        let adsType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
-        if adsType.contains("e") {
+        if emOn {
             return yEMIntUnit.available()
-        } else {
-            return yIntUnit.available()
         }
+        return yIntUnit.available()
     }
     
     func pingG() -> Bool {
@@ -94,7 +98,7 @@ class AdHub {
     
     func hasYanReady() -> Bool {
         guard adsToggle else { return false }
-        return pingBan() || pingInt()
+        return pingInt()
     }
     
     func hasAnyReady() -> Bool {
@@ -112,85 +116,51 @@ class AdHub {
             return
         }
         
-        if yaOn {
-            let adsType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
-            let isEMMode = adsType.contains("e")
-            
-            // 没有 "e" 才加载 Banner（有 "e" 就是 EM 模式，不加载 Banner）
-            if !isEMMode {
-                yBanUnit.fetch()
-            } else {
-                debugPrint("[Ad-Center] EM 模式，跳过 Banner 加载")
-            }
-            
-            // 根据是否是 EM 模式，加载对应的 Int
-            if isEMMode {
-                debugPrint("[Ad-Center] 加载 Yandex EM Int")
-                yEMIntUnit.fetch()
-            } else {
-                debugPrint("[Ad-Center] 加载 Yandex 原版 Int")
-                yIntUnit.fetch()
-            }
+        // 有 e 就是 EM：只加载 EM Int，不依赖 y
+        if emOn {
+            debugPrint("[Ad-Center] 加载 Yandex EM Int")
+            yEMIntUnit.fetch()
+        }
+        // 有 y 且无 e：加载原版 Yandex Int（不再加载 Banner）
+        else if yaOn {
+            debugPrint("[Ad-Center] 加载 Yandex 原版 Int")
+            yIntUnit.fetch()
         }
         
-        // Admob 根据后台配置决定是否加载（有 "a" 就加载，没 "a" 就不加载）
         if gaOn {
             gUnit.fetch(moment: moment)
         }
     }
     
     func warmBan(onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
-        debugPrint("[Ad-Center] 加载 Yandex Banner")
-        
-        if adsToggle && yaOn {
-            let adsType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
-            
-            // 有 "e" 就不加载 Banner，直接回调成功
-            if adsType.contains("e") {
-                debugPrint("[Ad-Center] EM 模式，跳过 Banner 加载")
-                onAdReady?()
-                return
-            }
-            
-            // 原逻辑保持不变
-            if pingBan() {
-                onAdReady?()
-            } else {
-                yBanUnit.onAdReady = onAdReady
-                yBanUnit.onAdFailed = onAdFailed
-                yBanUnit.fetch()
-            }
-        } else {
-            onAdReady?()
-        }
+        // 不再加载/展示 Banner，直接回调成功避免流程卡住
+        debugPrint("[Ad-Center] 跳过 Banner 加载")
+        onAdReady?()
     }
     
     func warmInt(onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
-        if adsToggle && yaOn {
-            let adsType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
-            let isEMMode = adsType.contains("e")
-            
-            if isEMMode {
-                debugPrint("[Ad-Center] 加载 Yandex EM Int")
-            } else {
-                debugPrint("[Ad-Center] 加载 Yandex 原版 Int")
-            }
-            
+        guard adsToggle, emOn || yaOn else {
+            onAdReady?()
+            return
+        }
+        if emOn {
+            debugPrint("[Ad-Center] 加载 Yandex EM Int")
             if pingInt() {
                 onAdReady?()
             } else {
-                if isEMMode {
-                    yEMIntUnit.onAdReady = onAdReady
-                    yEMIntUnit.onAdFailed = onAdFailed
-                    yEMIntUnit.fetch()
-                } else {
-                    yIntUnit.onAdReady = onAdReady
-                    yIntUnit.onAdFailed = onAdFailed
-                    yIntUnit.fetch()
-                }
+                yEMIntUnit.onAdReady = onAdReady
+                yEMIntUnit.onAdFailed = onAdFailed
+                yEMIntUnit.fetch()
             }
         } else {
-            onAdReady?()
+            debugPrint("[Ad-Center] 加载 Yandex 原版 Int")
+            if pingInt() {
+                onAdReady?()
+            } else {
+                yIntUnit.onAdReady = onAdReady
+                yIntUnit.onAdFailed = onAdFailed
+                yIntUnit.fetch()
+            }
         }
     }
     
