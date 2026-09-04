@@ -187,7 +187,8 @@ final class AppConfigStore {
     
     /// 获取本地保存的 Git 版本号
     func getLocalGitVersion() -> Int {
-        return UserDefaults.standard.integer(forKey: Keys.gitVersion)
+        let savedVersion = UserDefaults.standard.integer(forKey: Keys.gitVersion)
+        return max(savedVersion, 1)
     }
     
     /// 保存 Git 版本号
@@ -245,4 +246,3 @@ final class AppConfigStore {
         return "y"  // 默认只有 Yandex，Admob 关闭
     }
 }
-

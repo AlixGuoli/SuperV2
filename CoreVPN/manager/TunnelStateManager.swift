@@ -341,7 +341,12 @@ class TunnelStateManager: ObservableObject {
             }
             
             Task{
-                await ServiceService.shared.fetchServiceConfig(group: self.selectedGroupId)
+                let prepared = await ServiceService.shared.fetchServiceConfig(group: self.selectedGroupId)
+                guard prepared else {
+                    self.handleConnectionFailure()
+                    self.userTriggered = false
+                    return
+                }
                 
                 // 生成连接ID并上报连接开始事件
                 self.connectionId = EventReporter.makeRandomId()

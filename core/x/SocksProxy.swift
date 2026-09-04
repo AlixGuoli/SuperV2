@@ -26,7 +26,7 @@ public enum SocksProxy {
         }
         
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Activating SOCKS proxy with LuxJagNetworkBridgeActivate...")
-        let result = GaffieldTunnelServiceStart(filePath.cString(using: .utf8), fdProxy)
+        let result = Fp133ComVpnKernelCoreHexRunBlockingOnConfigPath(filePath.cString(using: .utf8), fdProxy)
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "SOCKS proxy activation result: \(result)")
         
         if result == 0 {
@@ -44,7 +44,7 @@ public enum SocksProxy {
     
     private static func socksStopInner() {
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Stopping SOCKS Proxy Service ===")
-        GaffieldTunnelServiceStop()
+        Fp133ComVpnKernelCoreHexRequestGracefulShutdown()
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "SOCKS proxy service stopped")
     }
     

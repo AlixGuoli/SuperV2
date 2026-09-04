@@ -24,19 +24,19 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         //startTunnelCore()
         if !checkTimeWindow() {
             let error = NSError(domain: Self.errorDomain, code: 1, userInfo: [Self.timeoutErrorKey: Self.timeoutErrorMsg])
-            self.cancelTunnelWithError(error)
             os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "checkTimeWindow false")
+            completionHandler(error)
             return
         }
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "checkTimeWindow true")
-        startConn()
-        completionHandler(nil)
+        startConn(completionHandler: completionHandler)
     }
     
     override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
         os_log("[PacketTunnelProvider] Stopping tunnel, reason: %d", log: OSLog.default, type: .error, reason.rawValue)
         //tunnelCore?.endSession()
         conn?.haltNet()
+        conn = nil
         completionHandler()
     }
     
@@ -83,21 +83,34 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         return false
     }
     
-    private func startConn() {
-        if conn == nil {
-            conn = TConn()
-        }
-        
-        conn?.applyNetworkSettings = { [weak self] cfg, done in
+    private func startConn(completionHandler: @escaping (Error?) -> Void) {
+        let activeConnection = TConn()
+        conn = activeConnection
+
+        activeConnection.applyNetworkSettings = { [weak self] cfg, done in
             self?.setTunnelNetworkSettings(cfg, completionHandler: done)
         }
         
-        Task {
+        Task { [weak self, weak activeConnection] in
+            guard let self, let activeConnection else {
+                completionHandler(NSError(domain: Self.errorDomain, code: 2))
+                return
+            }
             do {
-                os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "bootNet")
-                try await conn?.bootNet()
+                guard let defaults = UserDefaults(suiteName: SharedConfig.storageGroup),
+                      let xrayJSON = defaults.string(forKey: SharedConfig.dataKey),
+                      !xrayJSON.isEmpty else {
+                    throw NSError(domain: Self.errorDomain, code: 3, userInfo: [NSLocalizedDescriptionKey: "Missing Xray configuration"])
+                }
+                try await activeConnection.bootNet(xrayJSON: xrayJSON)
+                completionHandler(nil)
             } catch {
-                os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "bootNet error")
+                activeConnection.haltNet()
+                if self.conn === activeConnection {
+                    self.conn = nil
+                }
+                os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "bootNet error: \(error.localizedDescription)")
+                completionHandler(error)
             }
         }
     }

@@ -19,25 +19,36 @@ class TConn {
     private static let tunSubnet = "255.255.0.0"
     private static let dnsPrimary = "8.8.8.8"
     private static let dnsSecondary = "114.114.114.114"
+
+    private let lifecycleLock = NSLock()
+    private var stopping = false
+    private var ownsRunningCore = false
     
     var applyNetworkSettings: ((NEPacketTunnelNetworkSettings, @escaping (Error?) -> Void) -> Void)?
     
-    func bootNet() async throws {
-        try await bootNetInner()
+    func bootNet(xrayJSON: String) async throws {
+        try await bootNetInner(xrayJSON: xrayJSON)
     }
     
-    private func bootNetInner() async throws {
+    private func bootNetInner(xrayJSON: String) async throws {
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Starting Tunnel Connection ===")
-        
-        try await prepInfra()
-        try bootProxy()
-        
-        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Tunnel Connection Completed ===")
+        do {
+            try ensureActive()
+            try startXray(json: xrayJSON)
+            try ensureActive()
+            try await prepInfra()
+            try ensureActive()
+            try bootSocks()
+            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Tunnel Connection Completed ===")
+        } catch {
+            stopXray()
+            throw error
+        }
     }
     
     private func prepInfra() async throws {
         let tunCfg = netCfg()
-        applyNet(tunCfg)
+        try await applyNet(tunCfg)
     }
     
     private func netCfg() -> NEPacketTunnelNetworkSettings {
@@ -58,42 +69,51 @@ class TConn {
         return NEDNSSettings(servers: [Self.dnsPrimary, Self.dnsSecondary])
     }
     
-    private func applyNet(_ tunCfg: NEPacketTunnelNetworkSettings) {
-        self.applyNetworkSettings?(tunCfg) { error in
-            if error != nil {
-                os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Network settings application failed: \(error?.localizedDescription ?? "Unknown error")")
-            } else {
-                os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Network settings applied successfully")
+    private func applyNet(_ tunCfg: NEPacketTunnelNetworkSettings) async throws {
+        guard let applyNetworkSettings else {
+            throw NSError(domain: "TConn", code: 2, userInfo: [NSLocalizedDescriptionKey: "Missing network settings handler"])
+        }
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            applyNetworkSettings(tunCfg) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Network settings applied successfully")
+                    continuation.resume()
+                }
             }
         }
     }
-    
-    private func bootProxy() throws {
-        try bootSocks()
-        try bootXray()
-    }
-    
-    private func bootXray() throws {
-        let b64Cfg = mkXrayCfg()
-        try runXray(with: b64Cfg)
-    }
-    
-    private func mkXrayCfg() -> String {
-        let dirCfg = CProc.mkDirCfg()
-        let b64Cfg = Data(dirCfg.utf8).base64EncodedString()
-        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Configuration encoded, length: \(b64Cfg.count) chars")
-        return b64Cfg
-    }
-    
-    private func runXray(with config: String) throws {
-        guard let cfgStr = strdup(config) else {
-            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Failed to allocate memory for configuration")
-            throw NSError(domain: "TConn", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to allocate memory"])
+
+    private func startXray(json: String) throws {
+        _ = try XrayCommandClient.execute(method: "runXray", payload: ["xrayJson": json])
+
+        lifecycleLock.lock()
+        ownsRunningCore = true
+        let wasCancelled = stopping
+        lifecycleLock.unlock()
+
+        if wasCancelled {
+            stopXray()
+            throw cancellationError()
         }
-        defer { free(cfgStr) }
-        
-        CGoRunGaffield(UnsafeMutablePointer(mutating: cfgStr))
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Xray service started successfully")
+    }
+
+    private func stopXray() {
+        lifecycleLock.lock()
+        guard ownsRunningCore else {
+            lifecycleLock.unlock()
+            return
+        }
+        ownsRunningCore = false
+        lifecycleLock.unlock()
+
+        do {
+            _ = try XrayCommandClient.execute(method: "stopXray", payload: [:])
+        } catch {
+            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Xray stop failed: \(error.localizedDescription)")
+        }
     }
     
     private func bootSocks() throws {
@@ -112,7 +132,24 @@ class TConn {
     
     private func haltNetInner() {
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Terminating Tunnel Connection ===")
-        CGoStopGaffield()
+        lifecycleLock.lock()
+        stopping = true
+        lifecycleLock.unlock()
+        SocksProxy.socksStop()
+        stopXray()
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Xray service stopped")
+    }
+
+    private func ensureActive() throws {
+        lifecycleLock.lock()
+        let isStopping = stopping
+        lifecycleLock.unlock()
+        if isStopping {
+            throw cancellationError()
+        }
+    }
+
+    private func cancellationError() -> Error {
+        NSError(domain: "TConn", code: 3, userInfo: [NSLocalizedDescriptionKey: "Tunnel start cancelled"])
     }
 }

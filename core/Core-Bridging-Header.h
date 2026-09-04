@@ -8,7 +8,8 @@
 #ifndef Core_Bridging_Header_h
 #define Core_Bridging_Header_h
 
+#import "TunnelSocketCompat.h"
 #import "hev-main.h"
-#import "libGaffield.h"
+#import "libFp133ComVpnKernelCoreHex.h"
 
 #endif /* Core_Bridging_Header_h */
