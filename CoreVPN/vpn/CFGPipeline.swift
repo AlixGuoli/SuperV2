@@ -1,183 +1,149 @@
-//
-//  ConnectConfigHandler.swift
-//  CoreVPN
-//
-//  连接配置处理器：处理服务配置，更新入站和路由规则，保存到 Group UserDefaults
-//
-
 import Foundation
 
+struct TunnelConfigPackage {
+    let text: String
+    let firstServerAddress: String?
+}
+
+enum TunnelConfigPackageError: Error {
+    case malformedResponse
+    case unsupportedServerCount
+    case malformedServer(Int)
+}
+
 final class CFGPipeline {
-    
     static let shared = CFGPipeline()
-    
+
+    private let directHosts = [
+        "mradx.net", "yandex.ru", "yandexadexchange.net", "ads.adfox.ru",
+        "appmetrica.yandex.ru", "raw.githubusercontent.com", "vk.ru", "vk.me",
+        "mail.ru", "vk.com", "target.my.com"
+    ]
+
     private init() {}
-    
-    /// 保存处理后的服务配置到 Group UserDefaults
-    /// - Parameter serviceConfig: 解密后的服务配置 JSON 字符串
-    func storeCfg(serviceConfig: String) async throws {
-        debugPrint("[Request] start store")
-        
-        let processedConfig = runPipe(serviceConfig) ?? serviceConfig
-        await saveGroup(processedConfig)
-        
-        debugPrint("[Request] store done")
-        debugPrint("[Request] final config: \(processedConfig)")
-    }
-    
-    // MARK: - 配置处理管道
-    
-    private func runPipe(_ jsonString: String) -> String? {
-        guard let config = pJSON(jsonString) else {
-            debugPrint("[Request] parse fail")
-            return nil
+
+    func makeTunnelPackage(from response: String) throws -> TunnelConfigPackage {
+        guard let data = response.data(using: .utf8),
+              let object = try? JSONSerialization.jsonObject(with: data),
+              var envelope = object as? [String: Any],
+              var servers = envelope["res"] as? [[String: Any]] else {
+            throw TunnelConfigPackageError.malformedResponse
         }
-        let updatedConfig = mutInbound(config)
-        let enhancedConfig = mutRoute(updatedConfig)
-        return wJSON(enhancedConfig)
-    }
-    
-    // MARK: - 配置解析和序列化
-    
-    private func pJSON(_ jsonString: String) -> [String: Any]? {
-        guard let jsonData = jsonString.data(using: .utf8) else {
-            debugPrint("[Request] toData fail")
-            return nil
+        guard (1...5).contains(servers.count) else {
+            throw TunnelConfigPackageError.unsupportedServerCount
         }
-        return (try? JSONSerialization.jsonObject(with: jsonData, options: [])) as? [String: Any]
-    }
-    
-    private func wJSON(_ config: [String: Any]) -> String? {
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: config, options: .prettyPrinted) else {
-            debugPrint("[Request] toString fail")
-            return nil
-        }
-        return String(data: jsonData, encoding: .utf8)
-    }
-    
-    // MARK: - 入站配置更新
-    
-    private func mutInbound(_ config: [String: Any]) -> [String: Any] {
-        var cfg = config
-        guard var inbounds = cfg["inbounds"] as? [[String: Any]],
-              var firstInbound = inbounds.first else {
-            debugPrint("[Request] no inbound")
-            return cfg
-        }
-        
-        firstInbound["listen"] = "[::1]"
-        firstInbound["port"] = "8080"
-        inbounds[0] = firstInbound
-        cfg["inbounds"] = inbounds
-        
-        debugPrint("[Request] inbound set [::1]:8080")
-        return cfg
-    }
-    
-    // MARK: - 路由配置增强
-    
-    private func mutRoute(_ config: [String: Any]) -> [String: Any] {
-        let enhancedConfig = config
-        let bypassDomains = listBypass()
-        let routingRules = mkRules(bypassDomains)
-        return mergeRoute(enhancedConfig, rules: routingRules)
-    }
-    
-    private func listBypass() -> [String] {
-        var ds: [String] = []
-        
-        // 固定域名
-        ds.append(contentsOf: ["yastatic","yandex","gameanalytics","mradx.net","target.my.com","vk.ru","vk.me","vk.com","mail.ru"])
-        
-        // EM 模式直连域名
-        ds.append(contentsOf: ["yandex.ru","yandexadexchange.net","ads.adfox.ru","appmetrica.yandex.ru"])
-        
-        // 动态域名：从域名配置中提取
-        let domainConfig = DomainConfigStore.shared.loadActiveConfig()
-        ds.append(contentsOf: pickDyn(from: domainConfig))
-        
-        return ds
-    }
-    
-    private func pickDyn(from domainConfig: DomainConfig?) -> [String] {
-        var ds: [String] = []
-        
-        guard let domainConfig = domainConfig else {
-            return ds
-        }
-        
-        // 获取 connReport 域名
-        let connReport = domainConfig.api.connectReportURL
-        if !connReport.isEmpty {
-            if let connHost = URL(string: connReport)?.host {
-                ds.append(connHost)
+
+        var firstAddress: String?
+        for position in servers.indices {
+            guard number(servers[position]["groupID"]) != nil,
+                  let outerAddress = trimmed(servers[position]["address"] as? String),
+                  let receivedConfig = servers[position]["conf"] as? [String: Any],
+                  JSONSerialization.isValidJSONObject(receivedConfig) else {
+                throw TunnelConfigPackageError.malformedServer(position)
             }
-        }
-        
-        // 获取 genReport 域名
-        let genReport = domainConfig.api.generalReportURL
-        if !genReport.isEmpty {
-            if let genHost = URL(string: genReport)?.host {
-                ds.append(genHost)
+            if firstAddress == nil {
+                firstAddress = proxyAddress(in: receivedConfig) ?? outerAddress
             }
+            var usableConfig = receivedConfig
+            setLocalSocksAddress(in: &usableConfig)
+            mergeDirectRouting(into: &usableConfig)
+            servers[position]["conf"] = usableConfig
         }
-        
-        // 获取 hostList 域名（对应 DomainConfig 的 hosts）
-        let hosts = domainConfig.api.hosts
-        if !hosts.isEmpty {
-            let hostDomains = hosts.compactMap { URL(string: $0)?.host }
-            ds.append(contentsOf: hostDomains)
+
+        envelope["res"] = servers
+        guard JSONSerialization.isValidJSONObject(envelope),
+              let finalData = try? JSONSerialization.data(
+                withJSONObject: envelope,
+                options: [.prettyPrinted, .sortedKeys]
+              ),
+              let finalText = String(data: finalData, encoding: .utf8) else {
+            throw TunnelConfigPackageError.malformedResponse
         }
-        
-        return ds
+        return TunnelConfigPackage(text: finalText, firstServerAddress: firstAddress)
     }
-    
-    private func mkRules(_ domains: [String]) -> [[String: Any]] {
-        var rs: [[String: Any]] = []
-        
-        // 固定规则：raw.githubusercontent.com 单独处理
-        rs.append([
+
+    private func setLocalSocksAddress(in config: inout [String: Any]) {
+        guard var inbounds = config["inbounds"] as? [[String: Any]],
+              let socksPosition = inbounds.firstIndex(where: {
+                  $0["tag"] as? String == "socks" || $0["protocol"] as? String == "socks"
+              }) else { return }
+        inbounds[socksPosition]["listen"] = "[::1]"
+        inbounds[socksPosition]["port"] = "8080"
+        config["inbounds"] = inbounds
+    }
+
+    private func mergeDirectRouting(into config: inout [String: Any]) {
+        var routing = config["routing"] as? [String: Any] ?? [:]
+        let runtimeHosts = reportHostRules()
+        let ours = Set((directHosts + runtimeHosts).map { normalized($0) })
+        let receivedRules = routing["rules"] as? [[String: Any]] ?? []
+        var serverRules: [[String: Any]] = []
+
+        for receivedRule in receivedRules {
+            guard let domains = receivedRule["domain"] as? [String] else {
+                serverRules.append(receivedRule)
+                continue
+            }
+            if domains.contains(where: { normalized($0) == "geosite:category-ads-all" }) {
+                continue
+            }
+
+            var rule = receivedRule
+            if receivedRule["outboundTag"] as? String == "direct" {
+                rule["domain"] = domains.filter { !ours.contains(normalized($0)) }
+                if (rule["domain"] as? [String])?.isEmpty != false { continue }
+            }
+            serverRules.append(rule)
+        }
+
+        serverRules.append([
+            "outboundTag": "direct",
             "type": "field",
-            "domain": ["raw.githubusercontent.com"],
-            "outboundTag": "direct"
+            "domain": directHosts
         ])
-        
-        // 动态规则：其他域名
-        if !domains.isEmpty {
-            rs.append([
-                "type": "field",
-                "domain": domains,
-                "outboundTag": "direct"
+        if !runtimeHosts.isEmpty {
+            serverRules.append([
+                "outboundTag": "direct",
+                "domain": runtimeHosts
             ])
         }
-        
-        debugPrint("[Request] rules count: \(rs.count), rules: \(rs)")
-        return rs
+        routing["rules"] = serverRules
+        if routing["domainStrategy"] == nil { routing["domainStrategy"] = "AsIs" }
+        config["routing"] = routing
     }
-    
-    private func mergeRoute(_ config: [String: Any], rules: [[String: Any]]) -> [String: Any] {
-        var cfg = config
-        
-        if cfg["routing"] == nil {
-            cfg["routing"] = [
-                "domainStrategy": "AsIs",
-                "rules": rules
-            ]
-        } else if var routing = cfg["routing"] as? [String: Any] {
-            routing["rules"] = rules
-            cfg["routing"] = routing
+
+    private func reportHostRules() -> [String] {
+        guard let api = DomainConfigStore.shared.loadActiveConfig()?.api else { return [] }
+        let addresses = api.hosts + [api.connectReportURL, api.generalReportURL]
+        var unique = Set<String>()
+        return addresses.compactMap { address in
+            guard let host = URL(string: address)?.host?.lowercased() else { return nil }
+            let labels = host.split(separator: ".", omittingEmptySubsequences: true)
+            guard labels.count >= 2 else { return nil }
+            let value = "domain:" + labels.suffix(2).joined(separator: ".")
+            return unique.insert(value).inserted ? value : nil
         }
-        
-        return cfg
     }
-    
-    // MARK: - 配置持久化
-    
-    private func saveGroup(_ config: String) async {
-        let userDefaults = UserDefaults(suiteName: SharedConfig.storageGroup)
-        userDefaults?.set(Date(), forKey: SharedConfig.timeKey)
-        userDefaults?.set(config, forKey: SharedConfig.dataKey)
-        userDefaults?.synchronize()
-        debugPrint("[Request] saved to group")
+
+    private func proxyAddress(in config: [String: Any]) -> String? {
+        guard let outbounds = config["outbounds"] as? [[String: Any]],
+              let proxy = outbounds.first(where: { $0["tag"] as? String == "proxy" }),
+              let settings = proxy["settings"] as? [String: Any] else { return nil }
+        if let first = (settings["vnext"] as? [[String: Any]])?.first {
+            return trimmed(first["address"] as? String)
+        }
+        return trimmed(settings["address"] as? String)
+    }
+
+    private func normalized(_ value: String) -> String {
+        value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private func number(_ value: Any?) -> Int? { (value as? NSNumber)?.intValue }
+
+    private func trimmed(_ value: String?) -> String? {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !value.isEmpty else { return nil }
+        return value
     }
 }

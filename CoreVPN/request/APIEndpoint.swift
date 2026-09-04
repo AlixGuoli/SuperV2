@@ -39,7 +39,7 @@ struct CommonRequestContext {
     let pk: String
     let version: String
 
-    /// Poplar 业务接口使用带新库标识的包名；上报仍使用原始 `pk`。
+    /// Poplar 业务接口和上报统一使用带新库标识的包名。
     var apiPackageName: String {
         "fp133.\(pk)"
     }

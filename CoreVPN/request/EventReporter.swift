@@ -20,8 +20,8 @@ final class EventReporter {
     // MARK: - 事件类型常量（与后台定义一致，不能改）
     
     static let evtStart = "start_connect"
-    static let evtFail = "connect_failed"
-    static let evtSuccess = "connect_success"
+    static let evtAppSuccess = "app_success"
+    static let evtAppFail = "app_failed"
     static let evtDisconnect = "disconnect"
     static let evtAdStart = "start_get_ad"
     static let evtAdSuccess = "get_ad_success"
@@ -29,12 +29,8 @@ final class EventReporter {
     
     // MARK: - 连接事件上报
     
-    /// 上报连接事件
-    /// - Parameters:
-    ///   - moment: 事件类型（evtStart/evtFail/evtSuccess/evtDisconnect）
-    ///   - ip: IP地址（可选）
-    ///   - sid: 会话ID（可选）
-    func sendConnEvent(event: String, ip: String? = nil, sid: String? = nil) {
+    /// 上报一轮连接开始事件；逐节点 connect_* 由 Tunnel Extension 负责。
+    func sendConnEvent(event: String, sid: String? = nil) {
         let time = getTimeStamp()
         let code = "\(time)-\(sid ?? "")"
         
@@ -42,16 +38,28 @@ final class EventReporter {
         switch event {
         case EventReporter.evtStart:
             msg = "\(EventReporter.evtStart),\(code),0.0.0.0"
-        case EventReporter.evtFail:
-            msg = "\(EventReporter.evtFail),\(code),\(ip ?? "0.0.0.0")"
-        case EventReporter.evtSuccess:
-            msg = "\(EventReporter.evtSuccess),0,\(code),\(ip ?? "0.0.0.0")"
         default:
             debugPrint("[Report] [连接事件] 未知类型: \(event)")
             return
         }
         
         postLog(msg: msg, eventType: event)
+    }
+
+    func sendAppResult(success: Bool, ip: String?, usesCache: Bool, sid: String?) {
+        let event = success ? Self.evtAppSuccess : Self.evtAppFail
+        let normalized: String
+        if success {
+            let value = (ip?.isEmpty == false) ? ip! : "0.0.0.0"
+            normalized = usesCache && !value.hasPrefix("f") ? "f\(value)" : value
+        } else {
+            normalized = usesCache ? "f0.0.0.0" : "0.0.0.0"
+        }
+        let code = "\(getTimeStamp())-\(sid ?? "")"
+        let message = success
+            ? "\(event),0,\(code),\(normalized)"
+            : "\(event),\(code),\(normalized)"
+        postLog(msg: message, eventType: event)
     }
     
     // MARK: - 广告事件上报
@@ -134,7 +142,7 @@ final class EventReporter {
         components.queryItems = [
             URLQueryItem(name: "name", value: "getService"),
             URLQueryItem(name: "cty", value: ctx.country),
-            URLQueryItem(name: "pk", value: ctx.pk),
+            URLQueryItem(name: "pk", value: ctx.apiPackageName),
             URLQueryItem(name: "v", value: ctx.version),
             URLQueryItem(name: "asn", value: "0"),
             URLQueryItem(name: "isf", value: status),
@@ -154,7 +162,7 @@ final class EventReporter {
             URLQueryItem(name: "country", value: ctx.country),
             URLQueryItem(name: "lang", value: ctx.language),
             URLQueryItem(name: "mobile", value: EventReporter.deviceType),
-            URLQueryItem(name: "pk", value: ctx.pk),
+            URLQueryItem(name: "pk", value: ctx.apiPackageName),
             URLQueryItem(name: "version", value: ctx.version),
             URLQueryItem(name: "info", value: message)
         ]
@@ -215,4 +223,3 @@ final class EventReporter {
         return String(UUID().uuidString.prefix(8))
     }
 }
-

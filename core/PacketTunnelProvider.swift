@@ -1,118 +1,97 @@
-//
-//  PacketTunnelProvider.swift
-//  core
-//
-//  Created by SHI QIU on 2025/11/26.
-//
-
+import Foundation
 import NetworkExtension
 import os
 
-class PacketTunnelProvider: NEPacketTunnelProvider {
-    
-    private static let timeWindow: TimeInterval = 10
+final class PacketTunnelProvider: NEPacketTunnelProvider {
     private static let errorDomain = "com.vpn.kernel.core.hex"
-    private static let timeoutErrorKey = "timeout"
-    private static let timeoutErrorMsg = "timeout error"
-    
-    //private var tunnelCore: TunnelCore? = nil
-    
-    private var conn: TConn? = nil
-    
-    override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
-        os_log("[PacketTunnelProvider] Starting tunnel", log: OSLog.default, type: .error)
-        //startTunnelCore()
-        if !checkTimeWindow() {
-            let error = NSError(domain: Self.errorDomain, code: 1, userInfo: [Self.timeoutErrorKey: Self.timeoutErrorMsg])
-            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "checkTimeWindow false")
-            completionHandler(error)
-            return
-        }
-        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "checkTimeWindow true")
-        startConn(completionHandler: completionHandler)
-    }
-    
-    override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
-        os_log("[PacketTunnelProvider] Stopping tunnel, reason: %d", log: OSLog.default, type: .error, reason.rawValue)
-        //tunnelCore?.endSession()
-        conn?.haltNet()
-        conn = nil
-        completionHandler()
-    }
-    
-    override func handleAppMessage(_ messageData: Data, completionHandler: ((Data?) -> Void)?) {
-        // Add code here to handle the message.
-        if let handler = completionHandler {
-            handler(messageData)
-        }
-    }
-    
-    override func sleep(completionHandler: @escaping () -> Void) {
-        // Add code here to get ready to sleep.
-        completionHandler()
-    }
-    
-    override func wake() {
-        // Add code here to wake up.
-    }
-    
-    // MARK: - Nuts
-//    func startTunnelCore(){
-//        if tunnelCore == nil{
-//            tunnelCore  = TunnelCore(packetFlow: packetFlow)
-//        }
-//        tunnelCore?.configureNetwork = { [weak self] settings, completion in
-//            self?.setTunnelNetworkSettings(settings, completionHandler: completion)
-//        }
-//        tunnelCore?.beginSession()
-//    }
-    
-    // MARK: - Xray
-    private func checkTimeWindow() -> Bool {
-        if let userDefaults = UserDefaults(suiteName: SharedConfig.storageGroup) {
-            if let startTime = userDefaults.object(forKey: SharedConfig.timeKey) as? Date {
-                let now = Date()
-                let delta = now.timeIntervalSince(startTime)
-                if delta < Self.timeWindow {
-                    os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "PacketTunnelProvider less 10s")
-                    //os_log("PacketTunnelProvider less 10s.", log: OSLog.default, type: .error)
-                    return true
-                }
-            }
-        }
-        return false
-    }
-    
-    private func startConn(completionHandler: @escaping (Error?) -> Void) {
-        let activeConnection = TConn()
-        conn = activeConnection
 
-        activeConnection.applyNetworkSettings = { [weak self] cfg, done in
-            self?.setTunnelNetworkSettings(cfg, completionHandler: done)
+    private let stateLock = NSLock()
+    private var generation: UInt64 = 0
+    private var connection: TConn?
+
+    override func startTunnel(options: [String: NSObject]?, completionHandler: @escaping (Error?) -> Void) {
+        let current = TConn()
+        current.applyNetworkSettings = { [weak self] settings, done in
+            self?.setTunnelNetworkSettings(settings, completionHandler: done)
         }
-        
-        Task { [weak self, weak activeConnection] in
-            guard let self, let activeConnection else {
-                completionHandler(NSError(domain: Self.errorDomain, code: 2))
+        let token = beginStart(current)
+
+        Task.detached(priority: .userInitiated) { [weak self, weak current] in
+            guard let self, let current else {
+                completionHandler(NSError(domain: Self.errorDomain, code: 1))
                 return
             }
+            var route: RunningRoute?
             do {
-                guard let defaults = UserDefaults(suiteName: SharedConfig.storageGroup),
-                      let xrayJSON = defaults.string(forKey: SharedConfig.dataKey),
-                      !xrayJSON.isEmpty else {
-                    throw NSError(domain: Self.errorDomain, code: 3, userInfo: [NSLocalizedDescriptionKey: "Missing Xray configuration"])
+                let picker = TunnelRoutePicker(connection: current) {
+                    self.isActive(token, connection: current)
                 }
-                try await activeConnection.bootNet(xrayJSON: xrayJSON)
+                route = try await picker.openFirstAvailableRoute()
+                guard self.isActive(token, connection: current) else { throw TunnelRouteFailure.stopped }
+                try await current.finishTunnelSetup()
+                guard self.isActive(token, connection: current) else {
+                    current.haltNet()
+                    throw TunnelRouteFailure.stopped
+                }
+                TunnelRunRecords.note("network ready")
+                TunnelRunRecords.complete(route, success: true, error: "")
                 completionHandler(nil)
             } catch {
-                activeConnection.haltNet()
-                if self.conn === activeConnection {
-                    self.conn = nil
-                }
-                os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "bootNet error: \(error.localizedDescription)")
+                current.haltNet()
+                self.release(current, token: token)
+                TunnelRunRecords.note("tunnel failed error=\(error.localizedDescription)")
+                TunnelRunRecords.complete(route, success: false, error: error.localizedDescription)
+                os_log("[Batch] tunnel start failed: %{public}@", log: OSLog.default, type: .error, error.localizedDescription)
                 completionHandler(error)
             }
         }
     }
-    
+
+    override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
+        stateLock.lock()
+        generation &+= 1
+        let current = connection
+        connection = nil
+        stateLock.unlock()
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            current?.haltNet()
+            completionHandler()
+        }
+    }
+
+    override func handleAppMessage(_ messageData: Data, completionHandler: ((Data?) -> Void)?) {
+        guard let object = try? JSONSerialization.jsonObject(with: messageData) as? [String: Any],
+              object["action"] as? String == "batchReport",
+              let report = TunnelRunRecords.current(),
+              let data = try? JSONSerialization.data(withJSONObject: report) else {
+            completionHandler?(nil)
+            return
+        }
+        completionHandler?(data)
+    }
+
+    override func sleep(completionHandler: @escaping () -> Void) { completionHandler() }
+    override func wake() {}
+
+    private func beginStart(_ current: TConn) -> UInt64 {
+        stateLock.lock()
+        generation &+= 1
+        let token = generation
+        connection = current
+        stateLock.unlock()
+        return token
+    }
+
+    private func isActive(_ token: UInt64, connection current: TConn) -> Bool {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return generation == token && connection === current
+    }
+
+    private func release(_ current: TConn, token: UInt64) {
+        stateLock.lock()
+        if generation == token, connection === current { connection = nil }
+        stateLock.unlock()
+    }
 }

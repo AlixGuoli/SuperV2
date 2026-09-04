@@ -22,7 +22,7 @@ public enum SocksProxy {
         
         guard let fdProxy = self.fdSocks else {
             os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Failed to get tunnel file descriptor")
-            fatalError("Get tunnel file descriptor failed.")
+            return -1
         }
         
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Activating SOCKS proxy with LuxJagNetworkBridgeActivate...")
@@ -63,7 +63,9 @@ public enum SocksProxy {
         }
         os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Control name: com.apple.net.utun_control")
         
-        for fdIdx: Int32 in 0...1024 {
+        let upperBound = max(Int32(getdtablesize()), 0)
+        guard upperBound > 0 else { return nil }
+        for fdIdx: Int32 in 0..<upperBound {
             if let found = inspectFd(fdIdx, ctlBox: &ctlBox) {
                 return found
             }

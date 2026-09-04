@@ -1,18 +1,44 @@
-//
-//  NetManager.swift
-//  CoreVPN
-//
-//  Created by SHI QIU on 2025/12/8.
-//
-
 import Foundation
 import NetworkExtension
 import os
 
-var globalConfigPath: URL? = nil
+private enum XrayCoreLease {
+    private static let lock = NSLock()
+    private static var serial: UInt64 = 0
+    private static var owner: UInt64 = 0
 
-class TConn {
-    
+    static func test(_ json: String) throws {
+        lock.lock()
+        defer { lock.unlock() }
+        _ = try XrayCommandClient.execute(method: "testXray", payload: ["xrayJson": json])
+    }
+
+    static func start(_ json: String) throws -> UInt64 {
+        lock.lock()
+        defer { lock.unlock() }
+        serial &+= 1
+        let token = serial
+        do {
+            _ = try XrayCommandClient.execute(method: "runXray", payload: ["xrayJson": json])
+            owner = token
+            return token
+        } catch {
+            _ = try? XrayCommandClient.execute(method: "stopXray", payload: [:])
+            owner = 0
+            throw error
+        }
+    }
+
+    static func stop(_ token: UInt64) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard token != 0, owner == token else { return }
+        _ = try? XrayCommandClient.execute(method: "stopXray", payload: [:])
+        owner = 0
+    }
+}
+
+final class TConn {
     private static let tunRemoteAddr = "254.1.1.1"
     private static let tunMtu: NSNumber = 9000
     private static let tunIpAddr = "198.18.0.1"
@@ -22,134 +48,97 @@ class TConn {
 
     private let lifecycleLock = NSLock()
     private var stopping = false
-    private var ownsRunningCore = false
-    
+    private var coreToken: UInt64 = 0
+    private var socksStarted = false
+
     var applyNetworkSettings: ((NEPacketTunnelNetworkSettings, @escaping (Error?) -> Void) -> Void)?
-    
-    func bootNet(xrayJSON: String) async throws {
-        try await bootNetInner(xrayJSON: xrayJSON)
+
+    func validateXray(_ json: String) throws {
+        try ensureActive()
+        try XrayCoreLease.test(json)
+        try ensureActive()
     }
-    
-    private func bootNetInner(xrayJSON: String) async throws {
-        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Starting Tunnel Connection ===")
+
+    func activateXray(_ json: String) throws {
+        try ensureActive()
+        let token = try XrayCoreLease.start(json)
+        lifecycleLock.lock()
+        let cancelled = stopping
+        if !cancelled { coreToken = token }
+        lifecycleLock.unlock()
+        guard !cancelled else {
+            XrayCoreLease.stop(token)
+            throw cancellationError()
+        }
+    }
+
+    func finishTunnelSetup() async throws {
         do {
             try ensureActive()
-            try startXray(json: xrayJSON)
+            try await applyNet(netCfg())
             try ensureActive()
-            try await prepInfra()
+            startSocks()
             try ensureActive()
-            try bootSocks()
-            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Tunnel Connection Completed ===")
         } catch {
-            stopXray()
+            haltNet()
             throw error
         }
     }
-    
-    private func prepInfra() async throws {
-        let tunCfg = netCfg()
-        try await applyNet(tunCfg)
+
+    func haltNet() {
+        lifecycleLock.lock()
+        stopping = true
+        let token = coreToken
+        coreToken = 0
+        let shouldStopSocks = socksStarted
+        socksStarted = false
+        lifecycleLock.unlock()
+
+        if shouldStopSocks { SocksProxy.socksStop() }
+        XrayCoreLease.stop(token)
     }
-    
+
     private func netCfg() -> NEPacketTunnelNetworkSettings {
-        let tunCfg = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: Self.tunRemoteAddr)
-        tunCfg.mtu = Self.tunMtu
-        tunCfg.ipv4Settings = ipv4Cfg()
-        tunCfg.dnsSettings = dnsCfg()
-        return tunCfg
+        let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: Self.tunRemoteAddr)
+        settings.mtu = Self.tunMtu
+        let ipv4 = NEIPv4Settings(addresses: [Self.tunIpAddr], subnetMasks: [Self.tunSubnet])
+        ipv4.includedRoutes = [NEIPv4Route.default()]
+        settings.ipv4Settings = ipv4
+        settings.dnsSettings = NEDNSSettings(servers: [Self.dnsPrimary, Self.dnsSecondary])
+        return settings
     }
-    
-    private func ipv4Cfg() -> NEIPv4Settings {
-        let ip4Cfg = NEIPv4Settings(addresses: [Self.tunIpAddr], subnetMasks: [Self.tunSubnet])
-        ip4Cfg.includedRoutes = [NEIPv4Route.default()]
-        return ip4Cfg
-    }
-    
-    private func dnsCfg() -> NEDNSSettings {
-        return NEDNSSettings(servers: [Self.dnsPrimary, Self.dnsSecondary])
-    }
-    
-    private func applyNet(_ tunCfg: NEPacketTunnelNetworkSettings) async throws {
+
+    private func applyNet(_ settings: NEPacketTunnelNetworkSettings) async throws {
         guard let applyNetworkSettings else {
             throw NSError(domain: "TConn", code: 2, userInfo: [NSLocalizedDescriptionKey: "Missing network settings handler"])
         }
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            applyNetworkSettings(tunCfg) { error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else {
-                    os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Network settings applied successfully")
-                    continuation.resume()
-                }
+            applyNetworkSettings(settings) { error in
+                if let error { continuation.resume(throwing: error) }
+                else { continuation.resume() }
             }
         }
     }
 
-    private func startXray(json: String) throws {
-        _ = try XrayCommandClient.execute(method: "runXray", payload: ["xrayJson": json])
-
+    private func startSocks() {
+        let path = CProc.mkSocksPath()
         lifecycleLock.lock()
-        ownsRunningCore = true
-        let wasCancelled = stopping
+        socksStarted = true
         lifecycleLock.unlock()
-
-        if wasCancelled {
-            stopXray()
-            throw cancellationError()
-        }
-        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Xray service started successfully")
-    }
-
-    private func stopXray() {
-        lifecycleLock.lock()
-        guard ownsRunningCore else {
-            lifecycleLock.unlock()
-            return
-        }
-        ownsRunningCore = false
-        lifecycleLock.unlock()
-
-        do {
-            _ = try XrayCommandClient.execute(method: "stopXray", payload: [:])
-        } catch {
-            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Xray stop failed: \(error.localizedDescription)")
-        }
-    }
-    
-    private func bootSocks() throws {
-        let socksPath = CProc.mkSocksPath()
-        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "SOCKS config path: \(socksPath)")
-        
         DispatchQueue.global(qos: .userInitiated).async {
-            SocksProxy.socksStart(withConfig: socksPath)
-            os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "SOCKS proxy activated")
+            let result = SocksProxy.socksStart(withConfig: path)
+            os_log("[Super Xray] tun2socks exited: %{public}d", log: OSLog.default, type: .error, result)
         }
-    }
-    
-    func haltNet() {
-        haltNetInner()
-    }
-    
-    private func haltNetInner() {
-        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "=== Terminating Tunnel Connection ===")
-        lifecycleLock.lock()
-        stopping = true
-        lifecycleLock.unlock()
-        SocksProxy.socksStop()
-        stopXray()
-        os_log("[Super Xray] %{public}@", log: OSLog.default, type: .error, "Xray service stopped")
     }
 
     private func ensureActive() throws {
         lifecycleLock.lock()
-        let isStopping = stopping
+        let cancelled = stopping
         lifecycleLock.unlock()
-        if isStopping {
-            throw cancellationError()
-        }
+        if cancelled { throw cancellationError() }
     }
 
     private func cancellationError() -> Error {
-        NSError(domain: "TConn", code: 3, userInfo: [NSLocalizedDescriptionKey: "Tunnel start cancelled"])
+        NSError(domain: "TConn", code: NSUserCancelledError, userInfo: [NSLocalizedDescriptionKey: "Tunnel start cancelled"])
     }
 }

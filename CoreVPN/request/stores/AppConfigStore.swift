@@ -236,7 +236,7 @@ final class AppConfigStore {
     func getSavedAdsType() -> String? {
         /// 测试服 - 模拟 EM 模式
         //return "y"
-        //return "y;e"  // 只有 EM Int，不加载 Banner 和 Admob
+        //return "e"  // 只有 EM Int，不加载 Banner 和 Admob
         //return "y;a;e"  // EM Int + Admob，不加载 Banner
         //return "y;a"  // 原版模式：Banner + 原版 Int + Admob
         

@@ -28,13 +28,13 @@ final class AdsConfigStore {
         /// 测试服
         //return "demo-interstitial-yandex"
         //return "cc;demo-interstitial-yandex"
-        return UserDefaults.standard.string(forKey: Keys.yandexIntKey) ?? "R-M-17936270-3"
+        return UserDefaults.standard.string(forKey: Keys.yandexIntKey) ?? ""
     }
     
     /// 获取 Yandex EM Int Key
     func emIntKey() -> String {
         /// 测试服
-        //return "demo-interstitial-yandex"
+        //return "R-M-18478236-1"
         return UserDefaults.standard.string(forKey: Keys.yandexEMIntKey) ?? "R-M-18478236-1"
     }
     

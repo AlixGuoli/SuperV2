@@ -93,7 +93,7 @@ final class APIRequestExecutor {
     ) {
         var hosts = config.api.hosts
         
-        // ========== 测试超时功能开关 ==========
+        // ========== 测试服：接口超时开关 ==========
         // 设置为 true 时，会直接替换 hosts 数组用于测试超时
         // 测试完成后记得改回 false！
         let testTimeoutEnabled = false
@@ -101,7 +101,7 @@ final class APIRequestExecutor {
             hosts = ["https://test.nifymon.com"]
             hosts = ["https://httpbin.org/delay/10"]
         }
-        // ====================================
+        // ============================================
         
         guard !hosts.isEmpty else {
             let error = NSError(
@@ -260,4 +260,3 @@ final class APIRequestExecutor {
         return components?.url?.absoluteString
     }
 }
-

@@ -16,7 +16,7 @@ final class ServiceConfigStore {
     // MARK: - UserDefaults Keys
     
     private struct Keys {
-        static let serviceConfig = "ServiceConfigStore.ServiceConfig"
+        static let serviceConfig = "ServiceConfigStore.BatchConfig.v2"
         static let saveDate = "ServiceConfigStore.SaveDate"
     }
     
@@ -30,6 +30,8 @@ final class ServiceConfigStore {
     
     /// 配置来源标识（true=接口请求，false=UserDefaults）
     var isFromRequest: Bool = true
+
+    private var preparedCipher: String?
     
     // MARK: - Public: 保存与读取
     
@@ -52,6 +54,24 @@ final class ServiceConfigStore {
         
         UserDefaults.standard.synchronize()
         debugPrint("[Request] 服务配置已保存，保存时间：\(saveDate)")
+    }
+
+    func prepare(cipher: String, source: ServiceConfigSource, firstIP: String?) {
+        nowServiceCF = cipher
+        preparedCipher = source == .request ? cipher : nil
+        isFromRequest = source == .request
+        ipService = firstIP
+    }
+
+    func commitPreparedConfig() {
+        guard let preparedCipher else { return }
+        saveServiceConfig(preparedCipher)
+        self.preparedCipher = nil
+    }
+
+    func discardPreparedConfig() {
+        preparedCipher = nil
+        nowServiceCF = nil
     }
     
     /// 从 UserDefaults 读取服务配置（加密字符串）
@@ -78,6 +98,7 @@ final class ServiceConfigStore {
         nowServiceCF = nil
         ipService = nil
         isFromRequest = true
+        preparedCipher = nil
         debugPrint("[Request] 已清除保存的服务配置（测试用）")
     }
     

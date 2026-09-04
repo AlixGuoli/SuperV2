@@ -8,7 +8,6 @@
 import Foundation
 import NetworkExtension
 import Combine
-import Alamofire
 
 class TunnelStateManager: ObservableObject {
     
@@ -50,6 +49,12 @@ class TunnelStateManager: ObservableObject {
     private var targetDownload: Double = 0
     private var downloadTick: Int = 0
     private var selectedGroupId: Int = -1
+    private let attemptLock = NSLock()
+    private var attemptEpoch: UInt64 = 0
+    private var didReportFinalResult = false
+    private var awaitingTunnelStart = false
+    private var readingBatchReport = false
+    private var lastExtensionLogSequence: UInt64 = 0
     
     init() {
         // 初始化时读取当前系统状态
@@ -137,9 +142,7 @@ class TunnelStateManager: ObservableObject {
         case .connected:
             debugPrint("TunnelStateManager: 系统已连接")
             if userTriggered {
-                // 仅用户主动流程触发验证操作
-                // 计时起点放在验证成功后（runConnectionCheck）
-                runConnectionCheck()
+                finishTriggeredConnection()
             } else {
                 // 恢复状态，直接更新UI
                 if connectedSince == nil {
@@ -174,31 +177,35 @@ class TunnelStateManager: ObservableObject {
         }
     }
     
-    /// 执行连接后的任务（接口调用、验证等）- 仅用户主动连接时调用
-    private func runConnectionCheck() {
+    private func finishTriggeredConnection() {
+        guard !readingBatchReport else { return }
+        readingBatchReport = true
+        let generation = currentGeneration()
         Task { [weak self] in
-            guard let self = self else { return }
-            let isSuccess = await pingCheck()
-            
+            guard let self else { return }
+            let report = await self.loadBatchReport(preferProvider: true)
+            self.printExtensionBatchLogs()
+            guard self.isGenerationActive(generation), report?["success"] as? Bool == true else {
+                self.readingBatchReport = false
+                guard self.isGenerationActive(generation) else { return }
+                self.handleConnectionFailure()
+                return
+            }
+            let selectedIP = report?["selectedAddress"] as? String
             DispatchQueue.main.async {
-                if isSuccess {
-                    // 更新全局连接状态（用于广告系统判断）
-                    AppGlobalStatus.shared.connectStatus = .connected
-                    
-                    // 广告不阻塞连接结果：有库存由结果页直接展示，
-                    // 无库存则在结果页触发预拉，留给下次使用。
-                    self.handleConnectionSuccess()
-                } else {
-                    self.handleConnectionFailure()
-                }
+                self.readingBatchReport = false
+                guard self.isGenerationActive(generation) else { return }
+                AppGlobalStatus.shared.connectStatus = .connected
+                self.handleConnectionSuccess(selectedIP: selectedIP)
                 self.userTriggered = false
             }
         }
     }
     
     /// 连接成功后的处理（确保主线程更新）
-    private func handleConnectionSuccess() {
+    private func handleConnectionSuccess(selectedIP: String?) {
         DispatchQueue.main.async {
+            self.awaitingTunnelStart = false
             // 设置连接时间
             if self.connectedSince == nil {
                 let now = Date()
@@ -213,21 +220,10 @@ class TunnelStateManager: ObservableObject {
             self.connectionStatus = .connected
             self.hasEverConnected = true
             
-            // 连接成功：保存配置到 UserDefaults（如果来自接口请求）
             let store = ServiceConfigStore.shared
-            if store.isFromRequest {
-                if let serviceCF = store.nowServiceCF, !serviceCF.isEmpty {
-                    debugPrint("[Request] Save service config to UserDefaults")
-                    store.saveServiceConfig(serviceCF)
-                }
-            }
-            
-            // 上报连接成功事件
-            EventReporter.shared.sendConnEvent(
-                event: EventReporter.evtSuccess,
-                ip: store.ipService,
-                sid: self.connectionId
-            )
+            store.ipService = selectedIP
+            ServiceService.shared.commitSuccessfulRequest()
+            self.reportFinalResult(success: true, ip: selectedIP)
             
             // 显示结果页
             self.showFlowConnecting = false
@@ -240,20 +236,16 @@ class TunnelStateManager: ObservableObject {
         debugPrint("TunnelStateManager: 连接后验证失败，主动断开")
         
         DispatchQueue.main.async {
+            self.awaitingTunnelStart = false
             self.tunnelService.stopConnection()
+            ServiceService.shared.discardPreparedConfig()
+            self.reportFinalResult(success: false, ip: nil)
+            self.invalidateConnectionGeneration()
             self.connectionStatus = .failed
             self.connectedSince = nil
             self.elapsedDisplay = ""
             UserDefaults.standard.removeObject(forKey: self.connectionTimestampKey)
             self.stopTimer()
-            
-            // 上报连接失败事件
-            let store = ServiceConfigStore.shared
-            EventReporter.shared.sendConnEvent(
-                event: EventReporter.evtFail,
-                ip: store.ipService,
-                sid: self.connectionId
-            )
             
             // 显示结果页
             self.showFlowConnecting = false
@@ -263,8 +255,15 @@ class TunnelStateManager: ObservableObject {
     
     /// 断开连接后的处理
     private func handleDisconnection() {
+        if userTriggered && awaitingTunnelStart && !hasEverConnected {
+            ServiceService.shared.discardPreparedConfig()
+            reportFinalResult(success: false, ip: nil)
+            invalidateConnectionGeneration()
+        }
         connectionStatus = .disconnected
         userTriggered = false
+        readingBatchReport = false
+        lastExtensionLogSequence = 0
         
         // 如果 hasEverConnected == false，说明已经在 shutdownConnection() 中处理过结果页了
         // 这里只处理状态清理，不再设置结果页
@@ -341,27 +340,36 @@ class TunnelStateManager: ObservableObject {
             }
             
             Task{
-                let prepared = await ServiceService.shared.fetchServiceConfig(group: self.selectedGroupId)
+                let generation = self.beginConnectionGeneration()
+                let sessionID = EventReporter.makeRandomId()
+                self.connectionId = sessionID
+                EventReporter.shared.sendConnEvent(event: EventReporter.evtStart, sid: sessionID)
+                let prepared = await ServiceService.shared.fetchServiceConfig(
+                    group: self.selectedGroupId,
+                    vip: UserPrefs.isPremium ? 1 : 0,
+                    sessionID: sessionID,
+                    commit: { changes in self.commitIfActive(generation, changes) }
+                )
+                guard self.isGenerationActive(generation) else { return }
                 guard prepared else {
                     self.handleConnectionFailure()
                     self.userTriggered = false
                     return
                 }
                 
-                // 生成连接ID并上报连接开始事件
-                self.connectionId = EventReporter.makeRandomId()
-                EventReporter.shared.sendConnEvent(event: EventReporter.evtStart, sid:  self.connectionId)
-                
                 self.tunnelService.enableAndConfigure { error in
+                    guard self.isGenerationActive(generation) else { return }
                     if let error = error {
                         debugPrint("TunnelStateManager: 配置失败 - \(error)")
                         self.handleConnectionFailure()
                         self.userTriggered = false
                         return
                     }
-                    
+                    self.awaitingTunnelStart = true
                     self.tunnelService.startConnection { error in
+                        guard self.isGenerationActive(generation) else { return }
                         if let error = error {
+                            self.awaitingTunnelStart = false
                             debugPrint("TunnelStateManager: 启动连接失败 - \(error)")
                             self.handleConnectionFailure()
                             self.userTriggered = false
@@ -377,6 +385,10 @@ class TunnelStateManager: ObservableObject {
     func shutdownConnection() {
         showDisconnectConfirm = false
         userTriggered = false
+        awaitingTunnelStart = false
+        readingBatchReport = false
+        invalidateConnectionGeneration()
+        ServiceService.shared.discardPreparedConfig()
         
         // 如果之前连接过，先显示结果页
         if hasEverConnected {
@@ -505,70 +517,102 @@ class TunnelStateManager: ObservableObject {
         }
     }
 
-    // MARK: - 网络可达性验证（连接后探测）
-    
-    /// 连接成功后验证外网可达性（名称混淆版）
-    private func pingCheck() async -> Bool {
-        debugPrint("[Request] ping start")
-        
-        var targets = AppConfigStore.shared.detectionServerList() ?? []
-        targets = targets.filter { !$0.isEmpty }
-        if targets.isEmpty {
-            targets = ["https://www.google.com/generate_204", "http://cp.cloudflare.com/generate_204"]
-            debugPrint("[Request] ping use fallback")
+    // MARK: - Batch 连接代次与报告
+
+    private func beginConnectionGeneration() -> UInt64 {
+        attemptLock.lock()
+        attemptEpoch &+= 1
+        didReportFinalResult = false
+        awaitingTunnelStart = false
+        readingBatchReport = false
+        lastExtensionLogSequence = 0
+        let value = attemptEpoch
+        attemptLock.unlock()
+        return value
+    }
+
+    private func invalidateConnectionGeneration() {
+        attemptLock.lock()
+        attemptEpoch &+= 1
+        attemptLock.unlock()
+    }
+
+    private func currentGeneration() -> UInt64 {
+        attemptLock.lock()
+        defer { attemptLock.unlock() }
+        return attemptEpoch
+    }
+
+    private func isGenerationActive(_ value: UInt64) -> Bool {
+        attemptLock.lock()
+        defer { attemptLock.unlock() }
+        return attemptEpoch == value
+    }
+
+    private func commitIfActive(_ value: UInt64, _ changes: () -> Bool) -> Bool {
+        attemptLock.lock()
+        defer { attemptLock.unlock() }
+        guard attemptEpoch == value else { return false }
+        return changes()
+    }
+
+    private func reportFinalResult(success: Bool, ip: String?) {
+        printExtensionBatchLogs()
+        attemptLock.lock()
+        guard !didReportFinalResult else {
+            attemptLock.unlock()
+            return
         }
-        debugPrint("[Request] ping targets: \(targets)")
-        
-        let group = DispatchGroup()
-        let stateQueue = DispatchQueue(label: "corevpn.netcheck.state")
-        var ok = false
-        var taskMap: [URLSessionTask: String] = [:]
-        
-        for url in targets {
-            guard URL(string: url) != nil else { continue }
-            
-            group.enter()
-            let req = AF.request(url, method: .get)
-                .validate(statusCode: 200..<400)
-                .response { resp in
-                    switch resp.result {
-                    case .success:
-                        debugPrint("[Request] ping success: \(url)")
-                        stateQueue.sync {
-                            if !ok {
-                                ok = true
-                                AF.session.getAllTasks { tasks in
-                                    tasks.forEach { task in
-                                        task.cancel()
-                                    }
-                                }
-                            }
-                        }
-                    case .failure(let error):
-                        debugPrint("[Request] ping fail: \(url), \(error.localizedDescription)")
+        didReportFinalResult = true
+        let sid = connectionId
+        let usesCache = !ServiceConfigStore.shared.isFromRequest
+        attemptLock.unlock()
+
+        EventReporter.shared.sendAppResult(
+            success: success,
+            ip: success ? ip : nil,
+            usesCache: usesCache,
+            sid: sid
+        )
+    }
+
+    private func loadBatchReport(preferProvider: Bool) async -> [String: Any]? {
+        if preferProvider,
+           let session = tunnelService.tunnelProvider.connection as? NETunnelProviderSession,
+           let request = try? JSONSerialization.data(withJSONObject: ["action": "batchReport"]) {
+            let response: Data? = await withCheckedContinuation { (continuation: CheckedContinuation<Data?, Never>) in
+                do {
+                    try session.sendProviderMessage(request) { data in
+                        continuation.resume(returning: data)
                     }
-                    group.leave()
-                }
-            
-            if let task = req.task {
-                stateQueue.sync {
-                    taskMap[task] = url
-                }
-                debugPrint("[Request] ping add task: \(url)")
-            }
-        }
-        
-        _ = group.wait(timeout: .now() + 10)
-        if !ok {
-            debugPrint("[Request] ping timeout/all fail, cancel rest")
-            AF.session.getAllTasks { tasks in
-                tasks.forEach { task in
-                    task.cancel()
+                } catch {
+                    continuation.resume(returning: nil)
                 }
             }
+            if let response,
+               let report = try? JSONSerialization.jsonObject(with: response) as? [String: Any] {
+                return report
+            }
         }
-        
-        debugPrint("[Request] ping result: \(ok ? "ok" : "fail")")
-        return ok
+        return UserDefaults(suiteName: SharedConfig.storageGroup)?
+            .dictionary(forKey: SharedConfig.reportKey)
+    }
+
+    private func printExtensionBatchLogs() {
+#if DEBUG
+        let entries = UserDefaults(suiteName: SharedConfig.storageGroup)?
+            .array(forKey: SharedConfig.extensionLogKey) as? [[String: Any]] ?? []
+        for entry in entries.sorted(by: {
+            (($0["sequence"] as? NSNumber)?.uint64Value ?? 0)
+                < (($1["sequence"] as? NSNumber)?.uint64Value ?? 0)
+        }) {
+            let sequence = (entry["sequence"] as? NSNumber)?.uint64Value ?? 0
+            guard sequence > lastExtensionLogSequence else { continue }
+            lastExtensionLogSequence = sequence
+            if let message = entry["message"] as? String {
+                debugPrint("[Tunnel Extension] \(message)")
+            }
+        }
+#endif
     }
 }

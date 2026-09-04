@@ -80,4 +80,3 @@ struct TelegramCard: View {
         UIApplication.shared.open(telegramURL, options: [:], completionHandler: nil)
     }
 }
-
