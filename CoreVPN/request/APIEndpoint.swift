@@ -8,7 +8,9 @@
 import Foundation
 
 struct APIEndpoint {
-    /// 例如："/graphql/query/config"、"/graphql/query/ads" 等
+    static let serviceBatchPath = "/poplar/service/batch"
+
+    /// 例如："/poplar/config/cambium"、"/poplar/ads/shade" 等
     let path: String
 
     /// 额外业务参数（会在通用参数之上 merge）
@@ -36,6 +38,9 @@ struct CommonRequestContext {
     let language: String
     let pk: String
     let version: String
+
+    /// Poplar 业务接口使用带新库标识的包名；上报仍使用原始 `pk`。
+    var apiPackageName: String {
+        "fp133.\(pk)"
+    }
 }
-
-

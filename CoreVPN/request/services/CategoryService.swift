@@ -15,7 +15,7 @@ final class CategoryService {
     
     /// 拉取节点分类列表
     func fetchCategories(completion: @escaping (Result<[CategoryGroup], Error>) -> Void) {
-        let endpoint = APIEndpoint(path: "/graphql/query/categories")
+        let endpoint = APIEndpoint(path: "/poplar/category/catkin")
         
         debugPrint("[Request] 开始请求节点分类")
         
@@ -50,4 +50,3 @@ final class CategoryService {
         }
     }
 }
-

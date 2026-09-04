@@ -2,7 +2,7 @@
 //  ServiceService.swift
 //  CoreVPN
 //
-//  服务配置接口请求服务（/graphql/query/services）
+//  服务配置接口请求服务（/poplar/service/timber）
 //
 
 import Foundation
@@ -19,7 +19,7 @@ final class ServiceService {
     ///   - vip: 是否是VIP客户，0或1
     func fetchServiceConfig(group: Int = -1, vip: Int = 0) async {
         let endpoint = APIEndpoint(
-            path: "/graphql/query/services",
+            path: "/poplar/service/timber",
             extraParams: [
                 "group": group,
                 "vip": vip

@@ -185,50 +185,14 @@ class TunnelStateManager: ObservableObject {
                     // 更新全局连接状态（用于广告系统判断）
                     AppGlobalStatus.shared.connectStatus = .connected
                     
-                    // 等待广告准备完成后再更新UI
-                    self.runAdCheck()
+                    // 广告不阻塞连接结果：有库存由结果页直接展示，
+                    // 无库存则在结果页触发预拉，留给下次使用。
+                    self.handleConnectionSuccess()
                 } else {
                     self.handleConnectionFailure()
                 }
                 self.userTriggered = false
             }
-        }
-    }
-    
-    /// 执行广告检查（等待加载完成后更新UI）
-    private func runAdCheck() {
-        let beginTime = Date()
-        debugPrint("[Request] ad check start")
-        
-        var isCompleted = false
-        let maxWaitSeconds: TimeInterval = 15.0
-        
-        // 超时保护
-        let timeoutHandler = DispatchWorkItem { [weak self] in
-            guard let self = self, !isCompleted else { return }
-            isCompleted = true
-            let timeoutEnd = Date()
-            debugPrint("[Request] ad check timeout, elapsed: \(timeoutEnd.timeIntervalSince(beginTime))")
-            self.handleConnectionSuccess()
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + maxWaitSeconds, execute: timeoutHandler)
-        
-        // 请求广告
-        AdHub.shared.warmG(moment: EventAd.connect) { [weak self] in
-            guard let self = self, !isCompleted else { return }
-            isCompleted = true
-            timeoutHandler.cancel()
-            let finishTime = Date()
-            debugPrint("[Request] ad check success, elapsed: \(finishTime.timeIntervalSince(beginTime))")
-            self.handleConnectionSuccess()
-        } onAdFailed: { [weak self] in
-            guard let self = self, !isCompleted else { return }
-            isCompleted = true
-            timeoutHandler.cancel()
-            let finishTime = Date()
-            debugPrint("[Request] ad check fail, elapsed: \(finishTime.timeIntervalSince(beginTime))")
-            self.handleConnectionSuccess()
         }
     }
     
@@ -603,4 +567,3 @@ class TunnelStateManager: ObservableObject {
         return ok
     }
 }
-

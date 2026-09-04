@@ -13,10 +13,8 @@ class AdHub {
     
     static var shared = AdHub()
     
-    let gUnit = AdSlotHub()
     let yIntUnit = YanSlotHub()
     let yEMIntUnit = YanEMSlotHub()
-    let yBanUnit = YanBannerHub()
     
     var showFlag = false
     var vipFlag = false
@@ -24,8 +22,6 @@ class AdHub {
     // MARK: - 外部依赖封装
     private enum Env {
         static var cfg: AppConfigStore { AppConfigStore.shared }
-        static var status: AppGlobalStatus { AppGlobalStatus.shared }
-        static var connectState: TunnelState { status.connectStatus }
     }
     
     private var adsToggle: Bool {
@@ -43,31 +39,24 @@ class AdHub {
         
         return !isAdsOff
     }
+
+    /// 当前版本只识别 EM 和普通 Yandex；旧缓存中的 `a` 不再生效。
+    private var adTypeTokens: Set<String> {
+        let raw = Env.cfg.getSavedAdsType() ?? ""
+        return Set(raw.split(separator: ";").map { String($0) })
+    }
     
     private var yaOn: Bool {
-        let adType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
-        if adType.contains("y") {
+        if adTypeTokens.contains("y") {
             return true
         }
         debugPrint("[Ad-Center] Yandex 关闭")
         return false
     }
     
-    private var gaOn: Bool {
-        let adType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
-        if adType.contains("a") {
-            if Env.connectState == .connected {
-                return true
-            }
-        }
-        debugPrint("[Ad-Center] Admob 关闭 | 原因: 未连接或类型不匹配")
-        return false
-    }
-    
     /// e 独立：有 "e" 就是 EM，不管有没有 "y"
     private var emOn: Bool {
-        let adType = Env.cfg.getSavedAdsType()!.components(separatedBy: ";")
-        return adType.contains("e")
+        return adTypeTokens.contains("e")
     }
     
     private init() {
@@ -76,24 +65,11 @@ class AdHub {
     
     // MARK: - 状态检查方法
     
-    func pingBan() -> Bool {
-        return yBanUnit.available()
-    }
-    
     func pingInt() -> Bool {
         if emOn {
             return yEMIntUnit.available()
         }
         return yIntUnit.available()
-    }
-    
-    func pingG() -> Bool {
-        if Env.connectState == .connected {
-            return gUnit.available()
-        } else {
-            gUnit.clearAd()
-            return false
-        }
     }
     
     func hasYanReady() -> Bool {
@@ -103,7 +79,7 @@ class AdHub {
     
     func hasAnyReady() -> Bool {
         guard adsToggle else { return false }
-        return hasYanReady() || pingG()
+        return hasYanReady()
     }
     
     // MARK: - 广告加载管理
@@ -127,15 +103,6 @@ class AdHub {
             yIntUnit.fetch()
         }
         
-        if gaOn {
-            gUnit.fetch(moment: moment)
-        }
-    }
-    
-    func warmBan(onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
-        // 不再加载/展示 Banner，直接回调成功避免流程卡住
-        debugPrint("[Ad-Center] 跳过 Banner 加载")
-        onAdReady?()
     }
     
     func warmInt(onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
@@ -164,36 +131,10 @@ class AdHub {
         }
     }
     
-    func warmG(moment: String? = nil, onAdReady: (() -> Void)? = nil, onAdFailed: (() -> Void)? = nil) {
-        debugPrint("[Ad-Center] 加载 Admob Int")
-        
-        if adsToggle && gaOn {
-            gUnit.onAdReady = onAdReady
-            gUnit.onAdFailed = onAdFailed
-            gUnit.fetch(moment: moment)
-        } else {
-            onAdReady?()
-        }
-    }
-    
     // MARK: - 便捷展示方法
-    
-    func pushBan() {
-        AdShow.shared.showFromRoot(type: .yandexBanner)
-    }
     
     func pushInt(onClose: (() -> Void)? = nil) {
         AdShow.shared.showFromRoot(type: .yandexInt, onClose: onClose)
     }
     
-    func pushG(moment: String?) {
-        AdShow.shared.showFromRoot(type: .admobInt, moment: moment)
-    }
-    
-    // MARK: - 获取方法
-    
-    func getBan() -> AdView? {
-        return AdShow.shared.fetchBan()
-    }
 }
-

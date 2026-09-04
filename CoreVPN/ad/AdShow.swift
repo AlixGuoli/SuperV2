@@ -7,13 +7,10 @@
 
 import Foundation
 import UIKit
-import YandexMobileAds
 
 // 广告类型枚举
 enum AdType {
-    case yandexBanner
     case yandexInt
-    case admobInt
 }
 
 class AdShow {
@@ -37,26 +34,14 @@ class AdShow {
         }
     }
     
-    func showYanBan(from viewController: UIViewController) {
-        AdHub.shared.yBanUnit.open(from: viewController)
-    }
-    
-    func showGAd(from viewController: UIViewController, moment: String?) {
-        AdHub.shared.gUnit.open(from: viewController, moment: moment)
-    }
-    
     // MARK: - 便捷展示方法（合并为一个）
     
     func showFromRoot(type: AdType, moment: String? = nil, onClose: (() -> Void)? = nil) {
         guard let rootVC = getRootViewController() else { return }
         
         switch type {
-        case .yandexBanner:
-            showYanBan(from: rootVC)
         case .yandexInt:
             showYanInt(from: rootVC, onClose: onClose)
-        case .admobInt:
-            showGAd(from: rootVC, moment: moment)
         }
     }
     
@@ -69,10 +54,4 @@ class AdShow {
             .first(where: { $0.isKeyWindow })?.rootViewController
     }
     
-    func fetchBan() -> AdView? {
-        let adView = AdHub.shared.yBanUnit.getCurrentAd()
-        AdHub.shared.yBanUnit.refresh()
-        return adView
-    }
 }
-

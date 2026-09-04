@@ -15,7 +15,7 @@ final class AppConfigService {
     
     /// 请求基本配置接口
     func fetchBaseConfig(completion: @escaping (Result<AppConfig, Error>) -> Void) {
-        let endpoint = APIEndpoint(path: "/graphql/query/config")
+        let endpoint = APIEndpoint(path: "/poplar/config/cambium")
         
         debugPrint("[Request] 开始请求基本配置")
         
@@ -121,4 +121,3 @@ final class AppConfigService {
         debugPrint("[Request] hotcode: \(String(describing: store.serviceStatusCode()))")
     }
 }
-

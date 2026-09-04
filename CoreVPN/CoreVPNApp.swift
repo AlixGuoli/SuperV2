@@ -203,19 +203,11 @@ struct CoreVPNApp: App {
         if let lastAdsSave = AdsConfigStore.shared.saveTimestamp() {
             if now.timeIntervalSince(lastAdsSave) >= adsTTL {
                 debugPrint("[Config] 广告配置超过阈值，触发刷新")
-                Task {
-                    AdsService.shared.fetchAdsConfig { _ in
-                        AdsService.shared.fetchSkipButtonConfig()
-                    }
-                }
+                Task { AdsService.shared.fetchAdsConfig { _ in } }
             }
         } else {
             debugPrint("[Config] 未找到广告配置时间戳，首次拉取")
-            Task {
-                AdsService.shared.fetchAdsConfig { _ in
-                    AdsService.shared.fetchSkipButtonConfig()
-                }
-            }
+            Task { AdsService.shared.fetchAdsConfig { _ in } }
         }
     }
     
@@ -231,10 +223,7 @@ struct CoreVPNApp: App {
         let adHub = AdHub.shared
         debugPrint("[Ad-Splash] 🎬 开始展示广告")
         
-        if adHub.pingG() {
-            debugPrint("[Ad-Splash] ❤️ 展示 Admob")
-            adHub.pushG(moment: EventAd.foreground)
-        } else if adHub.pingInt() {
+        if adHub.pingInt() {
             debugPrint("[Ad-Splash] ❤️ 展示 Int")
             adHub.pushInt()
         } else {
@@ -303,12 +292,7 @@ struct CoreVPNApp: App {
     }
     
     private func presentBestAd(adHub: AdHub) -> Bool {
-        // 优先级顺序：Admob > Yandex Int（已去掉 Banner）
-        if adHub.pingG() {
-            debugPrint("[Ad-Background] ❤️ 展示 Admob")
-            adHub.pushG(moment: EventAd.foreground)
-            return true
-        } else if adHub.pingInt() {
+        if adHub.pingInt() {
             debugPrint("[Ad-Background] ❤️ 展示 Yandex Int")
             adHub.pushInt()
             return true

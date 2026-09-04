@@ -2,7 +2,7 @@
 //  AppConfig.swift
 //  CoreVPN
 //
-//  基本配置数据模型（/graphql/query/config 接口返回）
+//  基本配置数据模型（/poplar/config/cambium 接口返回）
 //
 
 import Foundation
@@ -67,4 +67,3 @@ struct RateusConfig: Codable {
     /// 冷却天数
     let cooldownDays: Int
 }
-

@@ -15,7 +15,7 @@ final class AdsService {
     
     /// 请求广告配置接口
     func fetchAdsConfig(completion: @escaping (Result<AdsConfig, Error>) -> Void) {
-        let endpoint = APIEndpoint(path: "/graphql/query/ads")
+        let endpoint = APIEndpoint(path: "/poplar/ads/shade")
         
         debugPrint("[Request] 开始请求广告配置")
         
@@ -62,48 +62,6 @@ final class AdsService {
         }
     }
     
-    /// 请求跳过按钮配置接口
-    func fetchSkipButtonConfig() {
-        let context = APIRequestExecutor.shared.commonContextProvider()
-        let endpoint = APIEndpoint(
-            path: "/graphql/query/page",
-            extraParams: [
-                "pagename": "ads_skip_yandex",
-                "pk": context.pk
-            ]
-        )
-        
-        debugPrint("[Request] 开始请求跳过按钮配置")
-        
-        APIRequestExecutor.shared.performRequest(endpoint: endpoint) { result in
-            switch result {
-            case .success(let data):
-                // 打印原始响应内容
-                let text = String(data: data, encoding: .utf8) ?? "<non-utf8 data>"
-                debugPrint("[Request] 跳过按钮配置请求成功，响应内容：\(text)")
-                
-                // 验证是否是有效的 JSON
-                guard RequestUtils.validateJsonString(text) else {
-                    debugPrint("[Request] 跳过按钮配置响应不是有效的 JSON")
-                    return
-                }
-                
-                // 解码为 PageConfigResponse
-                guard let response = try? JSONDecoder().decode(PageConfigResponse.self, from: data) else {
-                    debugPrint("[Request] 跳过按钮配置解析失败")
-                    return
-                }
-                
-                // 保存配置
-                AdsConfigStore.shared.saveSkipButtonConfig(response.pageconfig)
-                debugPrint("[Request] 跳过按钮配置保存成功：location=\(response.pageconfig.location), x=\(response.pageconfig.x), y=\(response.pageconfig.y)")
-                
-            case .failure(let error):
-                debugPrint("[Request] 跳过按钮配置请求失败：\(error.localizedDescription)")
-            }
-        }
-    }
-    
     // MARK: - Private
     
     /// 提取并保存各种广告配置
@@ -111,20 +69,9 @@ final class AdsService {
         let store = AdsConfigStore.shared
         let adMixed = config.adConfig.adMixed
         
-        // 提取并保存 Yandex Banner 配置
-        if let bannerConfig = store.extractYandexBannerConfig(from: adMixed) {
-            store.saveYandexBannerKey(bannerConfig.key)
-            store.savePenetrateSettings(penetrate: bannerConfig.penetrate, clickDelay: bannerConfig.clickDelay)
-        }
-        
         // 提取并保存 Yandex Int 配置
         if let intKey = store.extractYandexIntConfig(from: adMixed) {
             store.saveYandexIntKey(intKey)
-        }
-        
-        // 提取并保存 AdMob Int 配置
-        if let admobKey = store.extractAdmobIntConfig(from: adMixed) {
-            store.saveAdmobIntKey(admobKey)
         }
         
         // 提取并保存 Yandex EM Int 配置
@@ -138,4 +85,3 @@ final class AdsService {
         debugPrint("[Request] 广告配置提取完成")
     }
 }
-

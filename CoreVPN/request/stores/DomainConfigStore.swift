@@ -14,7 +14,7 @@ final class DomainConfigStore {
     private init() {}
 
     private struct Keys {
-        static let storedConfig = "DomainConfigStore.StoredConfig"
+        static let storedConfig = "DomainConfigStore.StoredConfig.v73"
     }
 
     // MARK: - Public
@@ -190,5 +190,4 @@ final class DomainConfigStore {
         task.resume()
     }
 }
-
 

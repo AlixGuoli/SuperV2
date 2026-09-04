@@ -2,7 +2,7 @@
 //  AdsConfig.swift
 //  CoreVPN
 //
-//  广告配置数据模型（/graphql/query/ads 接口返回）
+//  广告配置数据模型（/poplar/ads/shade 接口返回）
 //
 
 import Foundation
@@ -32,18 +32,14 @@ struct AdMixedItem: Codable {
     let adStyle: Int?
     /// 广告类型（可选）
     let adType: String?
-    /// 广告 Key（Yandex/AdMob 的 key）- 必需
+    /// Yandex 广告 Key
     let key: String
     /// 类型（可选）
     let type: Int?
-    /// 名称（Yandex_Banner_List, Yandex_Int_List, Admob_Int_List）- 必需
+    /// 名称（Yandex_Int_List / Yandex_EMInt_List）
     let name: String
     /// Key 列表（可选）
     let keyList: [String]?
-    /// 穿透比例（0-100）- 可选（只有 Yandex Banner 需要）
-    let penetrate: Int?
-    /// 点击延迟穿透（秒）- 可选（只有 Yandex Banner 需要）
-    let clickDelayPenet: Int?
     
     enum CodingKeys: String, CodingKey {
         case adId = "adId"
@@ -53,8 +49,5 @@ struct AdMixedItem: Codable {
         case type = "type"
         case name = "name"
         case keyList = "keyList"
-        case penetrate = "penetrate"
-        case clickDelayPenet = "clickDelayPenet"
     }
 }
-

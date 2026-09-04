@@ -274,15 +274,13 @@ struct HomeConnectView: View {
     private func showAd(moment: String) {
         let adHub = AdHub.shared
         
-        // 检查是否有广告可以展示
+        // 当前通道有库存就直接展示；没有则预拉一条留给下次，不阻塞连接流程。
         guard adHub.hasAnyReady() else {
+            adHub.warmAll(moment: moment)
             return
         }
         
-        // 按优先级展示广告：Admob > Yandex Int（已去掉 Banner）
-        if adHub.pingG() {
-            adHub.pushG(moment: moment)
-        } else if adHub.pingInt() {
+        if adHub.pingInt() {
             adHub.pushInt()
         }
     }
@@ -358,5 +356,4 @@ private struct HomeBackgroundView: View {
         .ignoresSafeArea()
     }
 }
-
 

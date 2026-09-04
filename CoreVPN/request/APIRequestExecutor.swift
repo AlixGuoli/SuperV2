@@ -244,7 +244,7 @@ final class APIRequestExecutor {
             "uid": context.uid,
             "country": context.country,
             "language": context.language,
-            "pk": context.pk,
+            "pk": context.apiPackageName,
             "version": context.version
         ]
 
@@ -260,5 +260,4 @@ final class APIRequestExecutor {
         return components?.url?.absoluteString
     }
 }
-
 

@@ -145,12 +145,7 @@ struct SplashView: View {
         debugPrint("[Splash] 基础配置请求完成")
         
         // 2. 同时进行：加载广告 + 请求广告接口（不等待广告配置完成）
-        Task {
-            AdsService.shared.fetchAdsConfig { _ in
-                // 广告接口完成后（无论成功失败），调用跳过按钮配置接口
-                AdsService.shared.fetchSkipButtonConfig()
-            }
-        }
+        Task { AdsService.shared.fetchAdsConfig { _ in } }
         
         // 3. 广告加载：仅等待 Int（已去掉 Banner）
         debugPrint("[Ad-Splash] 🚀 开始加载广告")
@@ -202,5 +197,4 @@ struct SplashView: View {
         }
     }
 }
-
 

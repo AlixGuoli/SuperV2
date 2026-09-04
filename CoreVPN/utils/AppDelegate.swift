@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import GoogleMobileAds
 import YandexMobileAds
 
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -18,23 +17,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         // 初始化语言
         _ = AppLanguage()
         
-        pushAdmob()
         pushYandex()
         pushGameAnalytics()
         return true
-    }
-    
-    func pushAdmob() {
-        MobileAds.shared.start { status in
-            let adapterStatuses = status.adapterStatusesByClassName
-            let success = adapterStatuses.values.contains { $0.state == .ready }
-            
-            if success {
-                debugPrint("[Init] Admob 初始化成功")
-            } else {
-                debugPrint("[Init] Admob 初始化失败")
-            }
-        }
     }
     
     func pushYandex() {
@@ -58,4 +43,3 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         GameAnalytics.initialize(withGameKey: gameKey, gameSecret: secretKey)
     }
 }
-
